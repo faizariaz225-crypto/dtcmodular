@@ -1,0 +1,50 @@
+/* ─── DTC Admin — Shell Layout (sidebar + main) ─────────────────────────── */
+
+body { display: flex; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--sidebar);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  z-index: 100;
+  transition: transform .25s;
+}
+
+.sb-brand   { padding: 1.4rem 1.2rem 1.1rem; border-bottom: 1px solid rgba(255,255,255,.08); }
+.sb-logo    { display: flex; align-items: center; gap: .6rem; margin-bottom: .1rem; }
+.sb-icon    { width: 32px; height: 32px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sb-icon svg{ width: 17px; height: 17px; }
+.sb-name    { font-size: 1rem; font-weight: 700; color: #fff; letter-spacing: -.02em; }
+.sb-tag     { font-size: .62rem; color: rgba(255,255,255,.4); margin-top: .08rem; }
+
+.nav        { flex: 1; padding: .8rem 0; overflow-y: auto; }
+.nav-sec    { font-size: .58rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.25); padding: .6rem 1.2rem .25rem; }
+.nav-item   { display: flex; align-items: center; gap: .6rem; padding: .58rem 1.2rem; font-size: .82rem; color: rgba(255,255,255,.55); cursor: pointer; transition: all .15s; border-left: 2px solid transparent; user-select: none; }
+.nav-item:hover   { color: rgba(255,255,255,.85); background: var(--sidebar-hover); }
+.nav-item.active  { color: #fff; background: var(--sidebar-active); border-left-color: var(--blue); }
+.nav-item .icon   { font-size: .9rem; width: 18px; text-align: center; flex-shrink: 0; }
+.nav-badge { margin-left: auto; background: rgba(217,119,6,.2); border: 1px solid rgba(217,119,6,.3); border-radius: 99px; font-size: .6rem; font-family: 'JetBrains Mono', monospace; padding: .1rem .45rem; color: #fbbf24; font-weight: 600; }
+
+.sb-footer  { padding: 1rem 1.2rem; border-top: 1px solid rgba(255,255,255,.07); font-size: .63rem; color: rgba(255,255,255,.25); }
+
+/* ── Main content area ── */
+.main { margin-left: var(--sidebar-w); flex: 1; padding: 2rem 2rem 5rem; min-width: 0; }
+
+/* ── Pages — only .active shown ── */
+.page        { display: none; animation: fadeDown .2s ease; }
+.page.active { display: block; }
+
+/* ── Mobile hamburger ── */
+.mob-btn { display: none; align-items: center; gap: .5rem; background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: .45rem .8rem; font-size: .8rem; color: var(--muted); cursor: pointer; margin-bottom: 1.4rem; box-shadow: var(--shadow); }
+
+@media (max-width: 768px) {
+  .sidebar               { transform: translateX(-100%); }
+  .sidebar.open          { transform: none; }
+  .main                  { margin-left: 0; padding: 1.2rem 1rem 4rem; }
+  .mob-btn               { display: flex !important; }
+}
