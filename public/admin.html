@@ -15,8 +15,9 @@
   <!-- Page-specific component styles (inline — scoped per component) -->
   <style>
     /* ── Dashboard ─────────────────────────────────────────────────────────── */
-    .stats { display: grid; grid-template-columns: repeat(6,1fr); gap: .8rem; margin-bottom: 1.3rem; }
-    @media (max-width:900px) { .stats { grid-template-columns: repeat(3,1fr); } }
+    .stats { display: grid; grid-template-columns: repeat(7,1fr); gap: .8rem; margin-bottom: 1.3rem; }
+    @media (max-width:1100px) { .stats { grid-template-columns: repeat(4,1fr); } }
+    @media (max-width:700px)  { .stats { grid-template-columns: repeat(2,1fr); } }
     @media (max-width:480px) { .stats { grid-template-columns: repeat(2,1fr); } }
     .stat     { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: .9rem 1rem; box-shadow: var(--shadow); }
     .stat-val { font-size: 1.5rem; font-weight: 700; font-family: 'JetBrains Mono',monospace; color: var(--text); }
@@ -113,6 +114,46 @@
     .instr-section-label{font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:4px;padding:.12rem .5rem;display:inline-block;margin-bottom:.4rem}
     .instr-section-divider{height:1px;background:var(--border);margin:1rem 0 .8rem}
     .modal-section-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:.7rem;padding:.3rem .7rem;background:var(--blue-light);border-radius:6px;display:block}
+
+    /* ── Bulk Email & Template Editor ────────────────────────────────────────── */
+    .email-layout{display:grid;grid-template-columns:240px 1fr 360px;gap:1.2rem;align-items:start}
+    @media(max-width:1200px){.email-layout{grid-template-columns:220px 1fr}}
+    @media(max-width:800px) {.email-layout{grid-template-columns:1fr}}
+
+    /* Template list */
+    .tmpl-panel{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:.9rem;box-shadow:var(--shadow)}
+    .tmpl-panel-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.7rem}
+    .tmpl-item{padding:.65rem .8rem;border-radius:8px;cursor:pointer;border:1.5px solid transparent;margin-bottom:.35rem;transition:all .15s}
+    .tmpl-item:hover{background:#f8fafc;border-color:var(--border)}
+    .tmpl-item.active{background:var(--blue-light);border-color:var(--blue-mid)}
+    .tmpl-item-name{font-size:.8rem;font-weight:600;color:var(--text);margin-bottom:.1rem}
+    .tmpl-item-subject{font-size:.68rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .tmpl-item-actions{display:flex;gap:.3rem;margin-top:.4rem}
+
+    /* Compose panel */
+    .compose-panel{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.3rem 1.4rem;box-shadow:var(--shadow)}
+    .compose-panel-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+    .recipient-bar{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin-bottom:1rem;padding:.7rem .9rem;background:#f8fafc;border:1px solid var(--border);border-radius:8px}
+    .recipient-count-badge{background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:99px;padding:.18rem .65rem;font-size:.72rem;font-weight:700;color:var(--blue);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+    .var-chips{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.8rem}
+    .var-chip{background:#f1f5f9;border:1px solid var(--border);border-radius:5px;padding:.15rem .5rem;font-size:.67rem;font-family:'JetBrains Mono',monospace;color:var(--blue);cursor:pointer;transition:all .15s;font-weight:500}
+    .var-chip:hover{background:var(--blue-light);border-color:var(--blue-mid)}
+    .compose-textarea{width:100%;min-height:220px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:.8rem;line-height:1.6;padding:.8rem;border:1.5px solid var(--border);border-radius:8px;outline:none;transition:border-color .2s}
+    .compose-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+    .send-bar{display:flex;align-items:center;gap:.8rem;margin-top:.9rem;flex-wrap:wrap}
+    .btn-send{background:#15803d;color:#fff;padding:.65rem 1.4rem;font-size:.88rem;font-weight:700;border:none;border-radius:9px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .18s;display:flex;align-items:center;gap:.45rem}
+    .btn-send:hover:not(:disabled){background:#166534;transform:translateY(-1px);box-shadow:0 4px 14px rgba(22,163,74,.3)}
+    .btn-send:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+    /* Preview panel */
+    .preview-panel{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1rem;box-shadow:var(--shadow);position:sticky;top:1.5rem}
+    .preview-panel-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.7rem;display:flex;align-items:center;gap:.4rem}
+    .preview-sample{font-size:.68rem;color:var(--muted);background:#f8fafc;border-radius:5px;padding:.2rem .5rem;font-family:'JetBrains Mono',monospace}
+    #email-preview-frame{width:100%;height:420px;border:1px solid var(--border);border-radius:8px;background:#f0f4ff}
+
+    /* Template editor modal extras */
+    .teditor-hint{font-size:.7rem;color:var(--muted2);margin-bottom:.4rem;line-height:1.5}
+    .html-textarea{font-family:'JetBrains Mono',monospace;font-size:.78rem;min-height:200px;resize:vertical;line-height:1.55}
 
     /* ── Products page ───────────────────────────────────────────────────────── */
     .product-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:.9rem;box-shadow:var(--shadow);transition:all .2s}
@@ -303,6 +344,9 @@
       <div class="nav-item" onclick="Shell.navigate('notifications', this)">
         <span class="icon">🔔</span>Notifications
       </div>
+      <div class="nav-item" onclick="Shell.navigate('campaigns', this)">
+        <span class="icon">📨</span>Email Campaigns
+      </div>
       <div class="nav-item" onclick="Shell.navigate('email', this)">
         <span class="icon">✉</span>Email Config
       </div>
@@ -325,6 +369,7 @@
       <!-- Generate card -->
       <div class="card">
         <div class="card-title">Generate Activation Link</div>
+
         <div class="form-row">
           <div class="form-group" style="margin-bottom:0">
             <label>Customer Name</label>
@@ -332,41 +377,44 @@
           </div>
           <div class="form-group" style="margin-bottom:0">
             <label>Product</label>
-            <select id="gen-product" onchange="Dashboard.refreshDropdowns(this.value)">
-              <option value="claude">Claude Pro</option>
-              <option value="chatgpt">ChatGPT Plus</option>
+            <select id="gen-product" onchange="Dashboard.onProductChange()">
+              <option value="">— Select Product —</option>
             </select>
           </div>
         </div>
-        <div class="form-row" style="margin-top:.9rem">
+
+        <div class="form-row" style="margin-top:.7rem">
           <div class="form-group" style="margin-bottom:0">
             <label>Package</label>
-            <select id="pkg">
+            <select id="pkg" onchange="Dashboard.onPackageChange()">
               <option value="">— Select Package —</option>
-              <option>Claude Pro — 1 Month</option>
-              <option>Claude Pro — 3 Months</option>
-              <option>Claude Pro — 6 Months</option>
-              <option>Claude Pro — 1 Year</option>
-              <option>Custom Package</option>
             </select>
           </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Price (USD) <span style="color:var(--error);font-size:.65rem;font-weight:400">* required — no free links</span></label>
+            <div class="price-input-wrap">
+              <span class="price-currency-icon">$</span>
+              <input type="number" id="gen-price" min="0.01" step="0.01" placeholder="0.00" style="font-weight:700;color:var(--success)"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top:.7rem">
           <div class="form-group" style="margin-bottom:0">
             <label>Pre-Activation Instructions</label>
             <select id="gen-instr-set">
               <option value="">— Default —</option>
             </select>
           </div>
-        </div>
-        <div class="form-row" style="margin-top:.5rem">
           <div class="form-group" style="margin-bottom:0">
             <label>Post-Activation Instructions</label>
             <select id="gen-post-instr-set">
               <option value="">— Same as Pre —</option>
             </select>
           </div>
-          <div></div>
         </div>
-        <button class="btn btn-primary" style="margin-top:.6rem" onclick="Dashboard.generateLink()">
+
+        <button class="btn btn-primary" style="margin-top:.8rem" onclick="Dashboard.generateLink()">
           ⚡ Generate Link
         </button>
         <div class="msg err" id="gen-err"></div>
@@ -503,6 +551,93 @@
         <div class="msg err" id="notif-err"></div>
       </div>
     </div><!-- /page-notifications -->
+
+    <!-- ── PAGE: Email Campaigns ── -->
+    <div class="page" id="page-campaigns">
+      <div class="ph">
+        <div class="ph-title">Email Campaigns</div>
+        <div class="ph-sub">Compose and send personalised emails to your customers. Use templates or write custom messages.</div>
+      </div>
+
+      <div class="email-layout">
+
+        <!-- Template list -->
+        <div class="tmpl-panel">
+          <div class="tmpl-panel-title">Templates</div>
+          <div id="template-list"><div class="empty" style="padding:1rem 0;font-size:.76rem">Loading…</div></div>
+        </div>
+
+        <!-- Compose -->
+        <div class="compose-panel">
+          <div class="compose-panel-title">
+            <span>Compose Message</span>
+          </div>
+
+          <!-- Recipient filter -->
+          <div class="recipient-bar">
+            <label style="font-size:.75rem;font-weight:600;color:var(--text);margin-bottom:0;white-space:nowrap">Send to:</label>
+            <select id="recipient-filter" onchange="BulkEmail._renderRecipientCount !== undefined && BulkEmail.render()" style="flex:1;padding:.4rem .7rem;font-size:.8rem;border:1.5px solid var(--border);border-radius:7px;background:var(--white);outline:none;min-width:160px">
+              <option value="all-with-email">Everyone with an email</option>
+              <option value="activated">Active subscribers only</option>
+              <option value="expiring">Expiring within 30 days</option>
+              <option value="expired">Expired subscriptions</option>
+              <option value="submitted">Submitted, awaiting approval</option>
+            </select>
+            <span class="recipient-count-badge" id="recipient-count">0 recipients</span>
+          </div>
+
+          <!-- Subject -->
+          <div class="form-group">
+            <label>Subject</label>
+            <input id="compose-subject" placeholder="e.g. Your subscription is expiring soon — DTC"/>
+          </div>
+
+          <!-- Variable chips -->
+          <div style="margin-bottom:.5rem">
+            <div style="font-size:.68rem;font-weight:600;color:var(--muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.07em">Insert variable</div>
+            <div class="var-chips">
+              <span class="var-chip" onclick="BulkEmail.insertVar('{{name}}')">{{name}}</span>
+              <span class="var-chip" onclick="BulkEmail.insertVar('{{package}}')">{{package}}</span>
+              <span class="var-chip" onclick="BulkEmail.insertVar('{{product}}')">{{product}}</span>
+              <span class="var-chip" onclick="BulkEmail.insertVar('{{expiry}}')">{{expiry}}</span>
+              <span class="var-chip" onclick="BulkEmail.insertVar('{{daysLeft}}')">{{daysLeft}}</span>
+              <span class="var-chip" onclick="BulkEmail.insertVar('{{email}}')">{{email}}</span>
+              <span class="var-chip" onclick="BulkEmail.insertVar('{{wechat}}')">{{wechat}}</span>
+            </div>
+          </div>
+
+          <!-- Body — HTML supported -->
+          <div class="form-group" style="margin-bottom:.6rem">
+            <label>
+              Body
+              <span style="font-weight:400;color:var(--muted);margin-left:.4rem">HTML supported — use &lt;p&gt;, &lt;strong&gt;, &lt;a href&gt;, etc.</span>
+            </label>
+            <textarea class="compose-textarea" id="compose-body" placeholder="Write your email here. HTML is supported.&#10;&#10;Example:&#10;&lt;p&gt;Hi {{name}},&lt;/p&gt;&#10;&lt;p&gt;Your &lt;strong&gt;{{package}}&lt;/strong&gt; subscription...&lt;/p&gt;"></textarea>
+          </div>
+
+          <div class="send-bar">
+            <button class="btn-send" id="send-bulk-btn" onclick="BulkEmail.send()">
+              📤 Send Email
+            </button>
+            <button class="btn btn-outline" onclick="BulkEmail.newTemplate()">Save as Template</button>
+            <button class="btn btn-outline btn-sm" onclick="BulkEmail.render()">↻ Refresh count</button>
+          </div>
+          <div class="msg ok" id="bulk-ok" style="margin-top:.7rem"></div>
+          <div class="msg err" id="bulk-err" style="margin-top:.7rem"></div>
+        </div>
+
+        <!-- Live preview -->
+        <div class="preview-panel">
+          <div class="preview-panel-title">
+            Live Preview
+            <span class="preview-sample" id="preview-sample-label">sample: Ahmed Khan</span>
+          </div>
+          <iframe id="email-preview-frame" sandbox="allow-same-origin" title="Email Preview"></iframe>
+          <div style="font-size:.68rem;color:var(--muted2);margin-top:.5rem;line-height:1.5">Variables are filled with sample data. Real emails are personalised per recipient.</div>
+        </div>
+
+      </div>
+    </div><!-- /page-campaigns -->
 
     <!-- ── PAGE: Email Config ── -->
     <div class="page" id="page-email">
@@ -647,6 +782,33 @@
 <!-- ══════════════════════════════════════════════════════════════════════════
      JAVASCRIPT — load in dependency order
 ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- Template Editor Modal -->
+<div class="modal-overlay" id="teditor-modal">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-title" id="teditor-modal-title">New Template</div>
+    <div class="modal-sub">Templates are reusable email drafts. Variables like <code style="background:#f1f5f9;padding:.1rem .35rem;border-radius:4px;font-size:.82rem">{{name}}</code> are replaced per recipient when sending.</div>
+    <input type="hidden" id="teditor-id"/>
+    <div class="form-group">
+      <label>Template Name <span style="font-weight:400;color:var(--muted)">(admin reference only)</span></label>
+      <input id="teditor-name" placeholder="e.g. Renewal Reminder"/>
+    </div>
+    <div class="form-group">
+      <label>Subject</label>
+      <input id="teditor-subject" placeholder="e.g. Your {{package}} expires in {{daysLeft}} days — DTC"/>
+    </div>
+    <div class="form-group">
+      <label>Body <span style="font-weight:400;color:var(--muted)">— HTML supported</span></label>
+      <div class="teditor-hint">Available variables: <code>{{name}}</code> <code>{{package}}</code> <code>{{product}}</code> <code>{{expiry}}</code> <code>{{daysLeft}}</code> <code>{{email}}</code> <code>{{wechat}}</code></div>
+      <textarea class="compose-textarea html-textarea" id="teditor-body" placeholder="&lt;p&gt;Hi {{name}},&lt;/p&gt;&#10;&lt;p&gt;Your &lt;strong&gt;{{package}}&lt;/strong&gt; subscription expires on &lt;strong&gt;{{expiry}}&lt;/strong&gt;.&lt;/p&gt;"></textarea>
+    </div>
+    <div class="msg err" id="teditor-err"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="BulkEmail.closeTemplateEditor()">Cancel</button>
+      <button class="btn btn-primary" onclick="BulkEmail.saveTemplate()">Save Template</button>
+    </div>
+  </div>
+</div>
+
 <!-- Product Editor Modal -->
 <div class="modal-overlay" id="prod-modal">
   <div class="modal" style="max-width:640px">
@@ -709,6 +871,7 @@
 <script src="js/instructions.js"></script>
 <script src="js/email.js"></script>
 <script src="js/modals.js"></script>
+<script src="js/bulk-email.js"></script>
 <script src="js/products.js"></script>
 <script src="js/revenue.js"></script>
 <script src="js/notifications.js"></script>
