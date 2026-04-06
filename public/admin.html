@@ -109,6 +109,70 @@
     .email-log-tbl tr:last-child td { border-bottom: none; }
     .email-log-tbl tr:hover td { background: #f8fafc; }
 
+    /* ── Instruction section labels ──────────────────────────────────────────── */
+    .instr-section-label{font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:4px;padding:.12rem .5rem;display:inline-block;margin-bottom:.4rem}
+    .instr-section-divider{height:1px;background:var(--border);margin:1rem 0 .8rem}
+    .modal-section-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:.7rem;padding:.3rem .7rem;background:var(--blue-light);border-radius:6px;display:block}
+
+    /* ── Products page ───────────────────────────────────────────────────────── */
+    .product-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:.9rem;box-shadow:var(--shadow);transition:all .2s}
+    .product-card:hover{box-shadow:var(--shadow-md)}
+    .product-card.inactive{opacity:.6}
+    .product-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.8rem;flex-wrap:wrap}
+    .product-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:.15rem}
+    .product-name{font-size:.92rem;font-weight:700;color:var(--text)}
+    .product-meta{font-size:.74rem;color:var(--muted);margin-top:.1rem}
+    .product-packages{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.7rem}
+    .pkg-row{display:flex;align-items:center;gap:.6rem;font-size:.76rem;padding:.25rem .5rem;background:#f8fafc;border-radius:6px}
+    .pkg-label{flex:1;color:var(--text);font-weight:500}
+    .pkg-price{font-weight:700;color:var(--success);font-family:'JetBrains Mono',monospace;min-width:50px;text-align:right}
+    .pkg-duration{color:var(--muted);font-size:.68rem;min-width:35px;text-align:right}
+    .product-creds{background:#fdf4ff;border:1px solid #e9d5ff;border-radius:8px;padding:.65rem .85rem}
+    .creds-label{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7c3aed;margin-bottom:.3rem}
+    .creds-preview{font-size:.72rem;color:#581c87;font-family:'JetBrains Mono',monospace;white-space:pre-wrap;word-break:break-all}
+    /* Package edit rows in modal */
+    .pkg-edit-row{display:grid;grid-template-columns:1fr 90px 80px 32px;gap:.5rem;align-items:center;margin-bottom:.5rem}
+    .pkg-price-wrap{position:relative}
+    .pkg-currency{position:absolute;left:.7rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.82rem;pointer-events:none}
+    .pkg-price-input,.pkg-label-input,.pkg-dur-input{padding:.5rem .7rem;font-size:.82rem;border:1.5px solid var(--border);border-radius:7px;background:var(--white);color:var(--text);outline:none;width:100%}
+    .pkg-price-input{padding-left:1.6rem}
+    .pkg-price-input:focus,.pkg-label-input:focus,.pkg-dur-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+    @media(max-width:480px){.pkg-edit-row{grid-template-columns:1fr 1fr;gap:.4rem}}
+    /* Price badge in dashboard */
+    .price-badge{display:inline-flex;align-items:center;padding:.1rem .5rem;border-radius:99px;font-size:.62rem;font-weight:700;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-family:'JetBrains Mono',monospace}
+    /* Price input in generate form */
+    .price-input-wrap{position:relative}
+    .price-input-wrap input{padding-left:1.8rem}
+    .price-currency-icon{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700;font-size:.88rem;pointer-events:none}
+
+    /* ── Revenue page ──────────────────────────────────────────────────────── */
+    .rev-big{font-size:2.4rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--success);letter-spacing:-.03em;margin-bottom:.2rem}
+    .rev-big-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+    .rev-product-block{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;margin-bottom:.9rem;box-shadow:var(--shadow)}
+    .rev-product-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;flex-wrap:wrap;gap:.5rem}
+    .rev-product-name{font-size:.85rem;font-weight:700;color:var(--text)}
+    .rev-count{font-size:.68rem;color:var(--muted);background:#f1f5f9;border-radius:99px;padding:.1rem .5rem}
+    .rev-product-total{font-size:.95rem;font-weight:700;font-family:'JetBrains Mono',monospace}
+    .rev-bar-wrap{display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem}
+    .rev-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+    .rev-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+    .rev-bar-pct{font-size:.65rem;color:var(--muted);font-family:'JetBrains Mono',monospace;min-width:30px;text-align:right}
+    .rev-row{display:grid;grid-template-columns:1fr 1fr 100px 70px;gap:.5rem;align-items:center;padding:.3rem .25rem;border-bottom:1px solid #f1f5f9;font-size:.74rem}
+    .rev-row:last-child{border-bottom:none}
+    .rev-row-name{font-weight:600;color:var(--text)}
+    .rev-row-pkg{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .rev-row-date{color:var(--muted2);font-size:.68rem}
+    .rev-row-price{font-weight:700;color:var(--success);text-align:right;font-family:'JetBrains Mono',monospace}
+
+    /* ── Notification page ────────────────────────────────────────────────────── */
+    .notif-type-btns{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem}
+    .notif-type-btn{padding:.28rem .8rem;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:transparent;font-family:'Inter',sans-serif;transition:all .18s}
+    .notif-type-btn:hover{border-color:var(--border2)}
+    .notif-type-btn.sel-info   {background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
+    .notif-type-btn.sel-success{background:#f0fdf4;border-color:#bbf7d0;color:#15803d}
+    .notif-type-btn.sel-warning{background:#fffbeb;border-color:#fde68a;color:#b45309}
+    .notif-type-btn.sel-error  {background:#fef2f2;border-color:#fecaca;color:#dc2626}
+
     /* ── Login screen ──────────────────────────────────────────────────────── */
     #login-wrap {
       min-height: 100vh;
@@ -224,9 +288,20 @@
         <span class="nav-badge" id="nb-exp" style="display:none">0</span>
       </div>
 
+      <div class="nav-sec" style="margin-top:.5rem">Revenue</div>
+      <div class="nav-item" onclick="Shell.navigate('revenue', this)">
+        <span class="icon">💰</span>Revenue
+      </div>
+      <div class="nav-sec" style="margin-top:.5rem">Catalogue</div>
+      <div class="nav-item" onclick="Shell.navigate('products', this)">
+        <span class="icon">📦</span>Products
+      </div>
       <div class="nav-sec" style="margin-top:.5rem">Settings</div>
       <div class="nav-item" onclick="Shell.navigate('instructions', this)">
         <span class="icon">📋</span>Instructions
+      </div>
+      <div class="nav-item" onclick="Shell.navigate('notifications', this)">
+        <span class="icon">🔔</span>Notifications
       </div>
       <div class="nav-item" onclick="Shell.navigate('email', this)">
         <span class="icon">✉</span>Email Config
@@ -276,11 +351,20 @@
             </select>
           </div>
           <div class="form-group" style="margin-bottom:0">
-            <label>Instruction Set</label>
+            <label>Pre-Activation Instructions</label>
             <select id="gen-instr-set">
               <option value="">— Default —</option>
             </select>
           </div>
+        </div>
+        <div class="form-row" style="margin-top:.5rem">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Post-Activation Instructions</label>
+            <select id="gen-post-instr-set">
+              <option value="">— Same as Pre —</option>
+            </select>
+          </div>
+          <div></div>
         </div>
         <button class="btn btn-primary" style="margin-top:.6rem" onclick="Dashboard.generateLink()">
           ⚡ Generate Link
@@ -292,7 +376,7 @@
             <span class="lr-text" id="gen-link"></span>
             <button class="copy-btn" id="copy-btn" onclick="Dashboard.copyGenLink()">Copy</button>
           </div>
-          <div class="lr-note">⚠ This link is valid for <strong>6 months</strong>.</div>
+          <div class="lr-note">⚠ This link is valid for <strong>6 months</strong>. &nbsp;|&nbsp; Price: <strong id="gen-price-display" style="color:var(--success)">—</strong></div>
         </div>
       </div>
 
@@ -304,6 +388,7 @@
         <div class="stat"><div class="stat-val sv-warn" id="s-sub">0</div><div class="stat-lbl">Submitted</div></div>
         <div class="stat"><div class="stat-val sv-green" id="s-act">0</div><div class="stat-lbl">Activated</div></div>
         <div class="stat"><div class="stat-val sv-red" id="s-exp">0</div><div class="stat-lbl">Expired / Declined</div></div>
+        <div class="stat"><div class="stat-val sv-green" id="s-rev">$0</div><div class="stat-lbl">Total Revenue</div></div>
       </div>
 
       <!-- Links table -->
@@ -355,6 +440,69 @@
       <div id="instr-list"><div class="empty">Loading…</div></div>
     </div><!-- /page-instructions -->
 
+
+    <!-- ── PAGE: Revenue ── -->
+    <div class="page" id="page-revenue">
+      <div class="ph">
+        <div class="ph-title">Revenue</div>
+        <div class="ph-sub">Track total earnings and per-product revenue across all activated subscriptions.</div>
+      </div>
+      <div class="card" style="margin-bottom:1.2rem">
+        <div style="display:flex;align-items:flex-end;gap:2rem;flex-wrap:wrap">
+          <div><div class="rev-big" id="rev-total">$0.00</div><div class="rev-big-label">Total Revenue (Activated)</div></div>
+        </div>
+      </div>
+      <div id="rev-breakdown"><div class="empty">Loading…</div></div>
+    </div><!-- /page-revenue -->
+
+    <!-- ── PAGE: Products ── -->
+    <div class="page" id="page-products">
+      <div class="ph">
+        <div class="ph-title">Products</div>
+        <div class="ph-sub">Manage your product catalogue, packages, prices, and credential details.</div>
+      </div>
+      <button class="btn btn-primary" style="margin-bottom:1.2rem" onclick="Products.openModal()">+ New Product</button>
+      <div id="products-list"><div class="empty">Loading…</div></div>
+    </div><!-- /page-products -->
+
+    <!-- ── PAGE: Notifications ── -->
+    <div class="page" id="page-notifications">
+      <div class="ph">
+        <div class="ph-title">Notifications</div>
+        <div class="ph-sub">Show a banner message to customers when they visit their activation page.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <span>Banner Message</span>
+          <label class="toggle" style="margin-bottom:0">
+            <input type="checkbox" id="notif-enabled"/>
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+            <span style="font-size:.78rem;color:var(--text);margin-left:.4rem;font-weight:600">Enabled</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <input id="notif-message" placeholder="e.g. We are experiencing high demand. Processing may take up to 24 hours." style="font-size:.85rem"/>
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <select id="notif-type" onchange="Notifications.init()">
+            <option value="info">ℹ Info (blue)</option>
+            <option value="success">✓ Success (green)</option>
+            <option value="warning">⚠ Warning (yellow)</option>
+            <option value="error">⚠ Alert (red)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Preview</label>
+          <div id="notif-preview" style="display:none"></div>
+          <div style="font-size:.72rem;color:var(--muted2);margin-top:.4rem">Enable the toggle and enter a message to see the preview.</div>
+        </div>
+        <button class="btn btn-primary" onclick="Notifications.save()">Save Notification</button>
+        <div class="msg ok" id="notif-ok"></div>
+        <div class="msg err" id="notif-err"></div>
+      </div>
+    </div><!-- /page-notifications -->
 
     <!-- ── PAGE: Email Config ── -->
     <div class="page" id="page-email">
@@ -463,17 +611,29 @@
       <label>Name</label>
       <input id="instr-name" placeholder="e.g. Claude Pro — Custom"/>
     </div>
+
+    <span class="modal-section-label">📋 Pre-Activation — shown while processing &amp; on approval</span>
     <div class="form-group">
       <label>Processing Page Message</label>
-      <textarea id="instr-processing" rows="3" placeholder="Message shown while the order is being reviewed…"></textarea>
+      <textarea id="instr-processing" rows="2" placeholder="Message shown while the order is being reviewed…"></textarea>
     </div>
     <div class="form-group">
       <label>Approved Page Message</label>
-      <textarea id="instr-approved" rows="3" placeholder="Message shown after approval…"></textarea>
+      <textarea id="instr-approved" rows="2" placeholder="Message shown after approval…"></textarea>
     </div>
     <div class="form-group">
-      <label>Approved Steps <span style="font-weight:400;color:var(--muted)">(one per line)</span></label>
-      <textarea id="instr-steps" rows="5" placeholder="Step 1&#10;Step 2&#10;Step 3"></textarea>
+      <label>Verification Steps <span style="font-weight:400;color:var(--muted)">(one per line)</span></label>
+      <textarea id="instr-steps" rows="4" placeholder="Step 1&#10;Step 2&#10;Step 3"></textarea>
+    </div>
+
+    <span class="modal-section-label">🚀 Post-Activation — shown in the "Getting Started" section</span>
+    <div class="form-group">
+      <label>Post-Activation Message</label>
+      <textarea id="instr-post-approved" rows="2" placeholder="Message shown in the Getting Started section after activation…"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Getting Started Steps <span style="font-weight:400;color:var(--muted)">(one per line)</span></label>
+      <textarea id="instr-post-steps" rows="4" placeholder="Step 1&#10;Step 2&#10;Step 3"></textarea>
     </div>
     <div class="msg err" id="instr-err"></div>
     <div class="modal-actions">
@@ -487,6 +647,59 @@
 <!-- ══════════════════════════════════════════════════════════════════════════
      JAVASCRIPT — load in dependency order
 ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- Product Editor Modal -->
+<div class="modal-overlay" id="prod-modal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-title" id="prod-modal-title">New Product</div>
+    <div class="modal-sub">Configure what customers see and submit when they use this product's activation link.</div>
+    <input type="hidden" id="prod-id"/>
+    <div class="form-row">
+      <div class="form-group"><label>Product Name</label><input id="prod-name" placeholder="e.g. Claude Pro"/></div>
+      <div class="form-group"><label>Type</label>
+        <select id="prod-type">
+          <option value="session">Claude (Org ID)</option>
+          <option value="chatgpt">ChatGPT (Session data)</option>
+          <option value="credentials">Credentials only</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Description</label><input id="prod-desc" placeholder="Short description shown in admin"/></div>
+      <div class="form-group" style="display:flex;align-items:flex-end;gap:1rem;padding-bottom:.1rem">
+        <div style="flex:1"><label>Colour</label><input type="color" id="prod-color" value="#2563eb" style="height:2.4rem;padding:.2rem .3rem;cursor:pointer"/></div>
+        <label class="toggle" style="margin-bottom:.35rem"><input type="checkbox" id="prod-active" checked/><div class="toggle-track"><div class="toggle-thumb"></div></div><span style="font-size:.8rem;font-weight:600;margin-left:.4rem">Active</span></label>
+      </div>
+    </div>
+
+    <div style="margin-bottom:.8rem">
+      <label class="toggle"><input type="checkbox" id="prod-creds-mode" onchange="Products._toggleCredsMode()"/><div class="toggle-track"><div class="toggle-thumb"></div></div><span style="font-size:.82rem;font-weight:600;margin-left:.5rem">Credentials Mode</span></label>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;padding-left:2.4rem">When enabled, customers only provide WeChat + email. Login details you enter below are shown to them after approval.</div>
+    </div>
+    <div id="creds-details-wrap" style="display:none;margin-bottom:.9rem">
+      <label>Login Details <span style="font-weight:400;color:var(--muted)">(shown to customer after approval)</span></label>
+      <textarea id="prod-login-details" rows="4" placeholder="e.g.&#10;Website: https://claude.ai&#10;Email: shared@example.com&#10;Password: ••••••••&#10;Notes: Log out after each session"></textarea>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+      <label style="margin-bottom:0">Packages & Prices</label>
+      <button class="btn btn-outline btn-sm" onclick="Products.addPkgRow()">+ Add Package</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 90px 80px 32px;gap:.5rem;margin-bottom:.3rem">
+      <span style="font-size:.63rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Label</span>
+      <span style="font-size:.63rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Price</span>
+      <span style="font-size:.63rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Duration</span>
+      <span></span>
+    </div>
+    <div id="pkg-rows"></div>
+
+    <div class="msg err" id="prod-err"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="Products.closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="Products.save()">Save Product</button>
+    </div>
+  </div>
+</div>
+
 <script src="js/utils.js"></script>
 <script src="js/store.js"></script>
 <script src="js/auth.js"></script>
@@ -496,6 +709,9 @@
 <script src="js/instructions.js"></script>
 <script src="js/email.js"></script>
 <script src="js/modals.js"></script>
+<script src="js/products.js"></script>
+<script src="js/revenue.js"></script>
+<script src="js/notifications.js"></script>
 
 <script>
   // ── Bootstrap: wire up everything once DOM is ready ──
