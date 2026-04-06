@@ -9,6 +9,8 @@
  */
 const Store = (() => {
   let _adminKey      = '';
+  let _products      = [];
+  let _revenue       = { total: 0, byProduct: {} };
   let _tokens        = {};
   let _emailLog      = [];
   let _instructions  = { sets: {} };
@@ -42,10 +44,19 @@ const Store = (() => {
     get custFilter()   { return _custFilter; },
     setCustFilter(f)   { _custFilter = f; },
 
+    // ── Products ──────────────────────────────────────────────────────────────
+    get products()     { return _products; },
+    setProducts(p)     { _products = p || []; },
+
+    // ── Revenue ───────────────────────────────────────────────────────────────
+    get revenue()      { return _revenue; },
+    setRevenue(r)      { _revenue = r || { total: 0, byProduct: {} }; },
+
     // ── Bulk load after login ─────────────────────────────────────────────────
-    load({ tokens, emailLog }) {
+    load({ tokens, emailLog, revenue }) {
       this.setTokens(tokens);
       this.setEmailLog(emailLog);
+      if (revenue) this.setRevenue(revenue);
     },
   };
 })();

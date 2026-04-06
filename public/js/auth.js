@@ -69,6 +69,10 @@ const Auth = (() => {
     safeRun('EmailConfig',  EmailConfig.load);
     safeRun('EmailLog',     EmailLog.render);
     safeRun('Dashboard',    Dashboard.refreshDropdowns);
+    safeRun('Products',      Products.loadData);
+    safeRun('Notifications', Notifications.load);
+    safeRun('Revenue',       Revenue.render);
+    Notifications.init();
   };
 
   // Silent error boundary — logs to console, never crashes login

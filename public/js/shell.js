@@ -23,6 +23,9 @@ const Shell = (() => {
 
     // Page-specific on-enter hooks
     if (pageId === 'instructions') Instructions.render();
+    if (pageId === 'products')     Products.render();
+    if (pageId === 'revenue')      Revenue.render();
+    if (pageId === 'notifications')  { Notifications.init(); Notifications.load(); }
   };
 
   // Called by nav-items: onclick="Shell.navigate('dashboard', this)"
