@@ -15,6 +15,7 @@ const EMAIL_LOG         = path.join(DATA_DIR, 'emailLog.json');
 const INSTRUCTIONS_FILE = path.join(DATA_DIR, 'instructions.json');
 const NOTIFY_FILE       = path.join(DATA_DIR, 'notifications.json');
 const PRODUCTS_FILE     = path.join(DATA_DIR, 'products.json');
+const TEMPLATES_FILE    = path.join(DATA_DIR, 'emailTemplates.json');
 
 const LINK_EXPIRY_MS = 6 * 30 * 24 * 60 * 60 * 1000;
 
@@ -24,6 +25,12 @@ if (!fs.existsSync(SESSIONS_FILE))  fs.writeFileSync(SESSIONS_FILE, '');
 if (!fs.existsSync(EMAIL_CONFIG))   fs.writeFileSync(EMAIL_CONFIG,  JSON.stringify({}));
 if (!fs.existsSync(EMAIL_LOG))      fs.writeFileSync(EMAIL_LOG,     JSON.stringify([]));
 if (!fs.existsSync(NOTIFY_FILE))    fs.writeFileSync(NOTIFY_FILE,   JSON.stringify({ enabled: false, message: '', type: 'info' }, null, 2));
+if (!fs.existsSync(TEMPLATES_FILE)) fs.writeFileSync(TEMPLATES_FILE, JSON.stringify({ templates: [
+  { id: 'welcome', name: 'Welcome Email', subject: 'Welcome to DTC — Your package is ready!', body: '<p>Hi {{name}},</p><p>Welcome to DTC! Your <strong>{{package}}</strong> subscription is now active and ready to use.</p><p>If you have any questions, reply to this email or contact us on WeChat.</p><p>Best regards,<br>The DTC Team</p>', lastModified: new Date().toISOString() },
+  { id: 'renewal-reminder', name: 'Renewal Reminder', subject: 'Your {{package}} subscription expires soon — DTC', body: '<p>Hi {{name}},</p><p>Just a reminder that your <strong>{{package}}</strong> subscription expires on <strong>{{expiry}}</strong> ({{daysLeft}} days left).</p><p>To continue your service without interruption, please contact us on WeChat to renew.</p><p>Best regards,<br>The DTC Team</p>', lastModified: new Date().toISOString() },
+  { id: 'promo', name: 'Promotional Offer', subject: 'Special offer for DTC customers 🎉', body: '<p>Hi {{name}},</p><p>We have a special offer just for you. Contact us on WeChat to find out more about our latest deals on AI tools.</p><p>Best regards,<br>The DTC Team</p>', lastModified: new Date().toISOString() },
+  { id: 'announcement', name: 'General Announcement', subject: 'Important update from DTC', body: '<p>Hi {{name}},</p><p>We wanted to share some important news with you.</p><p>[Write your announcement here]</p><p>Best regards,<br>The DTC Team</p>', lastModified: new Date().toISOString() }
+]}, null, 2));
 
 // ── Default products ───────────────────────────────────────────────────────────
 if (!fs.existsSync(PRODUCTS_FILE)) {
@@ -105,6 +112,8 @@ const saveNotify      = n  => fs.writeFileSync(NOTIFY_FILE,  JSON.stringify(n, n
 const loadProducts    = () => JSON.parse(fs.readFileSync(PRODUCTS_FILE,'utf8'));
 const saveProducts    = p  => fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(p, null, 2));
 const isAdmin         = k  => k === ADMIN_KEY;
+const loadTemplates   = () => JSON.parse(fs.readFileSync(TEMPLATES_FILE,'utf8'));
+const saveTemplates   = t  => fs.writeFileSync(TEMPLATES_FILE, JSON.stringify(t, null, 2));
 
 // ── Duration lookup — checks product packages first, falls back to label parsing ──
 function getDurationDays(productId, packageLabel) {
@@ -135,6 +144,25 @@ function getPrice(productId, packageLabel) {
     }
   } catch {}
   return 0;
+}
+
+// ── Template variable replacement ─────────────────────────────────────────────
+function applyTemplateVars(text, token) {
+  const t = token || {};
+  const expDate = t.subscriptionExpiresAt
+    ? new Date(t.subscriptionExpiresAt).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'})
+    : '—';
+  const daysLeft = t.subscriptionExpiresAt
+    ? Math.ceil((new Date(t.subscriptionExpiresAt) - new Date()) / (1000*60*60*24))
+    : 0;
+  return text
+    .replace(/{{name}}/g,     t.customerName || 'Customer')
+    .replace(/{{package}}/g,  t.packageType  || '')
+    .replace(/{{product}}/g,  t.productName  || t.productId || '')
+    .replace(/{{email}}/g,    t.email        || '')
+    .replace(/{{wechat}}/g,   t.wechat       || '')
+    .replace(/{{expiry}}/g,   expDate)
+    .replace(/{{daysLeft}}/g, String(daysLeft > 0 ? daysLeft : 0));
 }
 
 // ── Revenue helpers ────────────────────────────────────────────────────────────
@@ -464,6 +492,127 @@ app.post('/admin/send-reminder', async (req, res) => {
   const expiryStr = expiry ? expiry.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}) : '—';
   const html = type==='expired' ? expiredTemplate({ customerName:t.customerName, packageType:t.packageType }) : reminderTemplate({ customerName:t.customerName, packageType:t.packageType, expiryDate:expiryStr, daysLeft });
   res.json(await sendEmail({ to: t.email, subject: type==='expired' ? 'Subscription expired — DTC' : `Reminder: ${daysLeft} days left — DTC`, html, type:'manual_'+type, token }));
+});
+
+// ── Email Templates CRUD ──────────────────────────────────────────────────────
+app.get('/admin/email-templates', (req, res) => {
+  if (!isAdmin(req.query.adminKey)) return res.status(401).json({ error: 'Unauthorized' });
+  res.json(loadTemplates());
+});
+app.post('/admin/email-templates/save', (req, res) => {
+  const { adminKey, template } = req.body;
+  if (!isAdmin(adminKey)) return res.status(401).json({ error: 'Unauthorized' });
+  if (!template || !template.id || !template.name || !template.subject || !template.body)
+    return res.status(400).json({ error: 'All fields required.' });
+  const data = loadTemplates();
+  const idx  = data.templates.findIndex(t => t.id === template.id);
+  template.lastModified = new Date().toISOString();
+  if (idx >= 0) data.templates[idx] = template; else data.templates.push(template);
+  saveTemplates(data);
+  res.json({ success: true });
+});
+app.post('/admin/email-templates/delete', (req, res) => {
+  const { adminKey, id } = req.body;
+  if (!isAdmin(adminKey)) return res.status(401).json({ error: 'Unauthorized' });
+  const data = loadTemplates();
+  data.templates = data.templates.filter(t => t.id !== id);
+  saveTemplates(data);
+  res.json({ success: true });
+});
+
+// ── Bulk email send ────────────────────────────────────────────────────────────
+app.post('/admin/bulk-email', async (req, res) => {
+  const { adminKey, templateId, customSubject, customBody, recipientFilter, tokenList } = req.body;
+  if (!isAdmin(adminKey)) return res.status(401).json({ error: 'Unauthorized' });
+
+  const cfg = loadEmailCfg();
+  if (!cfg.host || !cfg.user || !cfg.pass)
+    return res.status(400).json({ error: 'Email is not configured. Go to Email Config first.' });
+
+  // Resolve template
+  let subject = customSubject || '';
+  let body    = customBody    || '';
+  if (templateId) {
+    const data = loadTemplates();
+    const tmpl = data.templates.find(t => t.id === templateId);
+    if (tmpl) { subject = subject || tmpl.subject; body = body || tmpl.body; }
+  }
+  if (!subject || !body) return res.status(400).json({ error: 'Subject and body are required.' });
+
+  // Build recipient list
+  const tokens  = loadTokens();
+  let recipients = [];
+
+  if (tokenList && tokenList.length) {
+    // Specific tokens selected by admin
+    recipients = tokenList.map(tok => tokens[tok]).filter(t => t && t.email);
+  } else {
+    // Filter-based
+    const filter = recipientFilter || 'all-with-email';
+    for (const t of Object.values(tokens)) {
+      if (!t.email) continue;
+      if (filter === 'all-with-email') { recipients.push(t); continue; }
+      if (filter === 'activated'   && t.approved)                { recipients.push(t); continue; }
+      if (filter === 'expiring'    && t.approved && t.subscriptionExpiresAt) {
+        const d = Math.ceil((new Date(t.subscriptionExpiresAt) - new Date())/(1000*60*60*24));
+        if (d >= 0 && d <= 30) { recipients.push(t); continue; }
+      }
+      if (filter === 'expired' && t.approved && t.subscriptionExpiresAt) {
+        const d = Math.ceil((new Date(t.subscriptionExpiresAt) - new Date())/(1000*60*60*24));
+        if (d < 0) { recipients.push(t); continue; }
+      }
+      if (filter === 'submitted' && t.used && !t.approved) { recipients.push(t); continue; }
+    }
+  }
+
+  if (!recipients.length) return res.status(400).json({ error: 'No recipients match this filter.' });
+
+  // Send emails one by one (avoid rate limits)
+  const results = { sent: 0, failed: 0, errors: [] };
+  for (const t of recipients) {
+    const personalSubject = applyTemplateVars(subject, t);
+    const personalBody    = applyTemplateVars(body, t);
+    const html = `<div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0">
+      <div style="background:#2563eb;padding:20px 28px">
+        <div style="font-size:18px;font-weight:700;color:#fff">DTC</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px">Digital Tools Corner</div>
+      </div>
+      <div style="padding:28px;font-size:14px;color:#334155;line-height:1.75">${personalBody}</div>
+      <div style="padding:16px 28px;background:#f8faff;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8">
+        DTC — Digital Tools Corner &nbsp;·&nbsp; <a href="mailto:dtc@dtc1.shop" style="color:#94a3b8">dtc@dtc1.shop</a>
+      </div>
+    </div>`;
+    const r = await sendEmail({ to: t.email, subject: personalSubject, html, type: 'bulk' });
+    if (r.ok) results.sent++;
+    else { results.failed++; results.errors.push({ email: t.email, error: r.error }); }
+    // Small delay between sends to avoid rate limiting
+    await new Promise(resolve => setTimeout(resolve, 200));
+  }
+  res.json({ success: true, ...results, total: recipients.length });
+});
+
+// ── Preview bulk email (returns personalised HTML for first recipient) ─────────
+app.post('/admin/bulk-email/preview', (req, res) => {
+  const { adminKey, templateId, customSubject, customBody, recipientFilter } = req.body;
+  if (!isAdmin(adminKey)) return res.status(401).json({ error: 'Unauthorized' });
+
+  let subject = customSubject || '';
+  let body    = customBody    || '';
+  if (templateId) {
+    const data = loadTemplates();
+    const tmpl = data.templates.find(t => t.id === templateId);
+    if (tmpl) { subject = subject || tmpl.subject; body = body || tmpl.body; }
+  }
+
+  // Find a sample recipient
+  const tokens = loadTokens();
+  const sample = Object.values(tokens).find(t => t.email) || { customerName: 'Ahmed Khan', packageType: 'Claude Pro — 1 Month', email: 'customer@example.com' };
+
+  res.json({
+    subject: applyTemplateVars(subject, sample),
+    body:    applyTemplateVars(body, sample),
+    sampleName: sample.customerName,
+  });
 });
 
 // ── Notifications ──────────────────────────────────────────────────────────────
