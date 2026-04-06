@@ -63,15 +63,20 @@ const Auth = (() => {
 
     // Step 4 — boot all modules independently (a failure in one never blocks others)
     Shell.init();
+    // Load data that other modules depend on FIRST (await so data is ready)
     await safeRun('Instructions', Instructions.loadData);
-    safeRun('Dashboard',    Dashboard.render);
-    safeRun('Customers',    Customers.render);
-    safeRun('EmailConfig',  EmailConfig.load);
-    safeRun('EmailLog',     EmailLog.render);
-    safeRun('Dashboard',    Dashboard.refreshDropdowns);
-    safeRun('Products',      Products.loadData);
-    safeRun('Notifications', Notifications.load);
-    safeRun('Revenue',       Revenue.render);
+    await safeRun('Products',     Products.loadData);
+    await safeRun('BulkEmail',    BulkEmail.loadTemplates);
+
+    // Now render — products + instructions are available
+    safeRun('Dashboard',      Dashboard.render);
+    safeRun('Dashboard.dd',   Dashboard.refreshDropdowns);
+    safeRun('Customers',      Customers.render);
+    safeRun('EmailConfig',    EmailConfig.load);
+    safeRun('EmailLog',       EmailLog.render);
+    safeRun('Notifications',  Notifications.load);
+    safeRun('Revenue',        Revenue.render);
+    safeRun('BulkEmail.init', BulkEmail.init);
     Notifications.init();
   };
 
