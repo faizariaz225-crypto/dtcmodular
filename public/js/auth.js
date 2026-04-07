@@ -67,6 +67,7 @@ const Auth = (() => {
     await safeRun('Instructions', Instructions.loadData);
     await safeRun('Products',     Products.loadData);
     await safeRun('BulkEmail',    BulkEmail.loadTemplates);
+    await safeRun('Settings',     Settings.load);
 
     // Now render — products + instructions are available
     safeRun('Dashboard',      Dashboard.render);
@@ -77,6 +78,7 @@ const Auth = (() => {
     safeRun('Notifications',  Notifications.load);
     safeRun('Revenue',        Revenue.render);
     safeRun('BulkEmail.init', BulkEmail.init);
+    safeRun('Resellers',      Resellers.render);
     Notifications.init();
   };
 

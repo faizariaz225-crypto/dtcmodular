@@ -9,7 +9,7 @@ const BulkEmail = (() => {
   // ── Load templates from server ─────────────────────────────────────────────
   const loadTemplates = async () => {
     const d = await api(`/admin/email-templates?adminKey=${encodeURIComponent(Store.adminKey)}`);
-    if (d && !d.error) { _templates = d.templates || []; }
+    if (d && !d.error) { _templates = d.templates || []; Store.setTemplates(_templates); }
   };
 
   // ── Render the full compose + template editor page ─────────────────────────
@@ -17,6 +17,23 @@ const BulkEmail = (() => {
     _renderTemplateList();
     _renderRecipientCount();
     _updateComposeFromTemplate();
+    _populateBulkTemplateSelect();
+  };
+
+  // Populate the quick-load dropdown in compose panel
+  const _populateBulkTemplateSelect = () => {
+    const sel = document.getElementById('bulk-template-select');
+    if (!sel) return;
+    const current = sel.value;
+    sel.innerHTML = '<option value="">— Select a template to load —</option>' +
+      _templates.map(t => `<option value="${esc(t.id)}" ${t.id===current?'selected':''}>${esc(t.name)}</option>`).join('');
+  };
+
+  // Load selected template from dropdown into compose fields
+  const loadSelectedTemplate = () => {
+    const id = document.getElementById('bulk-template-select')?.value;
+    if (!id) return;
+    selectTemplate(id);
   };
 
   // ── Template list (left panel) ─────────────────────────────────────────────
@@ -26,13 +43,14 @@ const BulkEmail = (() => {
     wrap.innerHTML = _templates.map(t => `
       <div class="tmpl-item ${_editingId === t.id ? 'active' : ''}" onclick="BulkEmail.selectTemplate('${esc(t.id)}')">
         <div class="tmpl-item-name">${esc(t.name)}</div>
-        <div class="tmpl-item-subject">${esc(t.subject)}</div>
-        <div class="tmpl-item-actions">
+        <div class="tmpl-item-subject" style="font-size:.67rem;color:var(--muted);margin-top:.1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.subject)}</div>
+        <div class="tmpl-item-actions" style="display:flex;gap:.3rem;margin-top:.45rem">
+          <button class="btn btn-ghost-blue btn-sm" style="flex:1" onclick="event.stopPropagation();BulkEmail.selectTemplate('${esc(t.id)}')">Use</button>
           <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();BulkEmail.editTemplate('${esc(t.id)}')">✏</button>
           <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();BulkEmail.deleteTemplate('${esc(t.id)}')">✕</button>
         </div>
       </div>`).join('') + `
-      <button class="btn btn-outline btn-sm" style="width:100%;margin-top:.5rem" onclick="BulkEmail.newTemplate()">
+      <button class="btn btn-outline btn-sm" style="width:100%;margin-top:.6rem;font-size:.75rem" onclick="BulkEmail.newTemplate()">
         + New Template
       </button>`;
   };
@@ -47,10 +65,19 @@ const BulkEmail = (() => {
   const _updateComposeFromTemplate = () => {
     const t = _templates.find(x => x.id === _editingId);
     if (!t) return;
-    const subjEl = document.getElementById('compose-subject');
-    const bodyEl = document.getElementById('compose-body');
+    const subjEl  = document.getElementById('compose-subject');
+    const bodyEl  = document.getElementById('compose-body');
+    const noteEl  = document.getElementById('template-type-note');
     if (subjEl) subjEl.value = t.subject;
     if (bodyEl) bodyEl.value = t.body;
+    const isFullHtml = t.body.trimStart().toLowerCase().startsWith('<!doctype') ||
+                       t.body.trimStart().toLowerCase().startsWith('<html');
+    if (noteEl) {
+      noteEl.style.display = '';
+      noteEl.innerHTML = isFullHtml
+        ? '<span style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:5px;padding:.18rem .6rem;font-size:.68rem;color:#15803d;font-weight:600">✓ Full HTML template — renders as designed</span>'
+        : '<span style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:5px;padding:.18rem .6rem;font-size:.68rem;color:#64748b;font-weight:600">Plain / partial HTML — wrapped in DTC shell</span>';
+    }
     _updatePreview();
   };
 
@@ -80,39 +107,67 @@ const BulkEmail = (() => {
   };
 
   // ── Live preview ───────────────────────────────────────────────────────────
+  const SAMPLE = {
+    name: 'Ahmed Khan', package: 'Claude Pro — 1 Month',
+    expiry: '05 August 2025', daysLeft: '12',
+    product: 'Claude Pro', email: 'ahmed@example.com', wechat: 'ahmed_wechat'
+  };
+
+  const _fillVars = (str) => str
+    .replace(/\{\{name\}\}/g,     SAMPLE.name)
+    .replace(/\{\{package\}\}/g,  SAMPLE.package)
+    .replace(/\{\{product\}\}/g,  SAMPLE.product)
+    .replace(/\{\{email\}\}/g,    SAMPLE.email)
+    .replace(/\{\{wechat\}\}/g,   SAMPLE.wechat)
+    .replace(/\{\{expiry\}\}/g,   SAMPLE.expiry)
+    .replace(/\{\{daysLeft\}\}/g, SAMPLE.daysLeft);
+
   const _updatePreview = () => {
     const subject = document.getElementById('compose-subject')?.value || '';
     const body    = document.getElementById('compose-body')?.value    || '';
     const prevEl  = document.getElementById('email-preview-frame');
     if (!prevEl) return;
 
-    // Client-side var substitution with sample values
-    const sample = { name: 'Ahmed Khan', package: 'Claude Pro — 1 Month', expiry: '05 August 2025', daysLeft: '12', product: 'Claude Pro', email: 'ahmed@example.com', wechat: 'ahmed_wechat' };
-    const replace = str => str
-      .replace(/{{name}}/g,     sample.name)
-      .replace(/{{package}}/g,  sample.package)
-      .replace(/{{product}}/g,  sample.product)
-      .replace(/{{email}}/g,    sample.email)
-      .replace(/{{wechat}}/g,   sample.wechat)
-      .replace(/{{expiry}}/g,   sample.expiry)
-      .replace(/{{daysLeft}}/g, sample.daysLeft);
+    // Detect if body is a full HTML email (already wrapped with <!DOCTYPE)
+    const isFullHtml = body.trimStart().toLowerCase().startsWith('<!doctype') ||
+                       body.trimStart().toLowerCase().startsWith('<html');
 
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:'Helvetica Neue',Arial,sans-serif;margin:0;padding:0;background:#f0f4ff}</style></head><body>
-      <div style="max-width:580px;margin:16px auto;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 2px 12px rgba(0,0,0,.08)">
-        <div style="background:#2563eb;padding:20px 28px">
-          <div style="font-size:18px;font-weight:700;color:#fff">DTC</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px">Digital Tools Corner</div>
+    let html;
+    if (isFullHtml) {
+      // Full template — just fill variables and render directly
+      html = _fillVars(body);
+    } else {
+      // Plain/partial HTML — wrap in branded shell
+      html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+        <style>body{margin:0;padding:0;background:#f0f4ff;font-family:'Helvetica Neue',Arial,sans-serif}</style>
+      </head><body>
+        <div style="max-width:600px;margin:16px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 4px 16px rgba(37,99,235,.08)">
+          <div style="background:#2563eb;padding:24px 32px;display:flex;align-items:center;gap:10px">
+            <span style="font-size:22px">⚡</span>
+            <div>
+              <div style="font-size:18px;font-weight:700;color:#fff">DTC</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.65);letter-spacing:.04em">DIGITAL TOOLS CORNER</div>
+            </div>
+          </div>
+          <div style="padding:6px 24px;background:#f8faff;border-bottom:1px solid #e2e8f0">
+            <div style="font-size:12px;color:#64748b;padding:8px 0">
+              <strong style="color:#1e293b">Subject:</strong> \${_fillVars(subject)}
+            </div>
+          </div>
+          <div style="padding:28px 32px;font-size:14px;color:#334155;line-height:1.75">
+            \${_fillVars(body || '<p style="color:#94a3b8;font-style:italic">Start writing your email body above…</p>')}
+          </div>
+          <div style="padding:16px 32px;background:#f8faff;border-top:1px solid #e2e8f0">
+            <div style="font-size:11px;color:#94a3b8">DTC — Digital Tools Corner &nbsp;·&nbsp; dtc@dtc1.shop</div>
+          </div>
         </div>
-        <div style="padding:8px 16px;background:#f8faff;border-bottom:1px solid #e2e8f0;font-size:12px;color:#64748b">
-          <strong>Subject:</strong> ${replace(esc(subject))}
-        </div>
-        <div style="padding:24px 28px;font-size:14px;color:#334155;line-height:1.75">${replace(body)}</div>
-        <div style="padding:14px 28px;background:#f8faff;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8">
-          DTC — Digital Tools Corner · dtc@dtc1.shop
-        </div>
-      </div>
-    </body></html>`;
+      </body></html>`;
+    }
     prevEl.srcdoc = html;
+
+    // Update sample label
+    const lbl = document.getElementById('preview-sample-label');
+    if (lbl) lbl.textContent = `preview: ${SAMPLE.name}`;
   };
 
   // ── Template editor modal ──────────────────────────────────────────────────
@@ -242,6 +297,7 @@ const BulkEmail = (() => {
   return {
     loadTemplates, render, init,
     selectTemplate, newTemplate, editTemplate, closeTemplateEditor, saveTemplate, deleteTemplate,
-    send, insertVar,
+    send, insertVar, loadSelectedTemplate,
+    _renderRecipientCount,
   };
 })();

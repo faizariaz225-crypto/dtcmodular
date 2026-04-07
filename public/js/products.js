@@ -42,6 +42,10 @@ const Products = (() => {
               <span class="pkg-duration">${pk.durationDays}d</span>
             </div>`).join('')}
         </div>
+        ${p.credentialsMode ? `
+          <div style="margin-top:.6rem;display:flex;gap:.4rem;flex-wrap:wrap">
+            <button class="btn btn-warn btn-sm" onclick="Products.pushCredentials('${esc(p.id)}')">🔄 Push Updated Credentials</button>
+          </div>` : ''}
         ${p.credentialsMode && p.loginDetails ? `
           <div class="product-creds">
             <div class="creds-label">Login details shared with customer on approval</div>
@@ -62,6 +66,7 @@ const Products = (() => {
     document.getElementById('prod-active').checked     = p ? (p.active !== false) : true;
     document.getElementById('prod-creds-mode').checked = p ? !!p.credentialsMode : false;
     document.getElementById('prod-login-details').value= p ? (p.loginDetails || '') : '';
+    document.getElementById('prod-access-link').value  = p ? (p.accessLink   || '') : '';
     _renderPkgRows(p ? p.packages : [{ label: '', price: '', durationDays: 30 }]);
     _toggleCredsMode();
     document.getElementById('prod-err').classList.remove('show');
@@ -131,6 +136,7 @@ const Products = (() => {
       active:          document.getElementById('prod-active').checked,
       credentialsMode: document.getElementById('prod-creds-mode').checked,
       loginDetails:    document.getElementById('prod-login-details').value.trim(),
+      accessLink:      document.getElementById('prod-access-link').value.trim(),
       packages,
     };
 
@@ -155,3 +161,19 @@ const Products = (() => {
 
   return { loadData, getAll, render, openModal, closeModal, addPkgRow, removePkgRow, save, remove, _toggleCredsMode };
 })();
+
+// ── Push updated credentials to all active tokens ────────────────────────────
+Products.pushCredentials = async (productId) => {
+  const data = Products.getAll();
+  const prod = data.find(p => p.id === productId);
+  if (!prod) return;
+  if (!confirm(`Push updated credentials/access link to ALL active customers of "${prod.name}"? They will see the new details immediately.`)) return;
+  const d = await api('/admin/products/update-credentials', {
+    adminKey:     Store.adminKey,
+    productId,
+    loginDetails: prod.loginDetails || '',
+    accessLink:   prod.accessLink   || '',
+  });
+  if (d && d.success) alert(`✓ Updated ${d.updatedTokens} active customer${d.updatedTokens !== 1 ? 's' : ''}.`);
+  else alert('Failed: ' + (d && d.error));
+};

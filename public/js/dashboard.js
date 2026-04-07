@@ -70,7 +70,10 @@ const Dashboard = (() => {
       const subSt  = getSubStatus(t);
       const rowCls = t.deactivated ? 'row-deactivated' : subSt === 'soon' || subSt === 'danger' ? 'row-expiring' : subSt === 'expired' ? 'row-expired-sub' : status === 'declined' ? 'row-declined' : '';
 
-      // Product colour dot
+      // Generated link URL
+      const linkUrl = `${window.location.origin}/submit?token=${token}`;
+
+    // Product colour dot
       const products = Store.products || [];
       const prod     = products.find(p => p.id === t.productId);
       const dotColor = prod ? (prod.color || '#2563eb') : (t.product === 'chatgpt' ? 'var(--gpt)' : 'var(--blue)');
@@ -88,6 +91,7 @@ const Dashboard = (() => {
           <div style="font-weight:600;font-size:.82rem">${esc(t.customerName)}</div>
           <div style="font-size:.68rem;color:var(--muted);font-family:'JetBrains Mono',monospace">${esc(t.packageType)}</div>
           ${t.email ? `<div style="font-size:.68rem;color:var(--muted);font-family:'JetBrains Mono',monospace">${esc(t.email)}</div>` : ''}
+          ${t.resellerId ? `<span style="font-size:.62rem;background:#fdf4ff;border:1px solid #e9d5ff;border-radius:4px;padding:.08rem .4rem;color:#7c3aed;font-weight:600">🤝 ${esc(t.resellerName||t.resellerId)}</span>` : ''}
         </td>
         <td>${statusBadge(status)}</td>
         <td>${_dataCell(t, token)}</td>
@@ -99,12 +103,16 @@ const Dashboard = (() => {
             ${t.submittedAt ? `<div style="display:flex;gap:.4rem"><span style="color:var(--muted2);min-width:52px;font-weight:500">Submit</span><span>${fmt(t.submittedAt)}</span></div>` : ''}
             ${t.approvedAt  ? `<div style="display:flex;gap:.4rem"><span style="color:var(--muted2);min-width:52px;font-weight:500">Active</span><span style="color:var(--success)">${fmt(t.approvedAt)}</span></div>` : ''}
           </div>
-          <span style="display:inline-block;background:${ac>0?'var(--blue-light)':'#f1f5f9'};border:1px solid ${ac>0?'var(--blue-mid)':'var(--border)'};border-radius:4px;padding:.08rem .4rem;font-size:.61rem;font-family:'JetBrains Mono',monospace;color:${ac>0?'var(--blue)':'var(--muted2)'};margin-top:.25rem">👁 ${ac} open${ac!==1?'s':''}</span>
+          <div style="margin-top:.4rem">
+          <a href="${linkUrl}" target="_blank" style="font-size:.62rem;color:var(--blue);text-decoration:none;font-family:'JetBrains Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;max-width:160px" title="${linkUrl}">🔗 Open link</a>
+          <button class="icopy" style="margin-top:2px" onclick="copyText('${linkUrl}',this)">Copy URL</button>
+        </div>
+        <span style="display:inline-block;background:${ac>0?'var(--blue-light)':'#f1f5f9'};border:1px solid ${ac>0?'var(--blue-mid)':'var(--border)'};border-radius:4px;padding:.08rem .4rem;font-size:.61rem;font-family:'JetBrains Mono',monospace;color:${ac>0?'var(--blue)':'var(--muted2)'};margin-top:.25rem">👁 ${ac} open${ac!==1?'s':''}</span>
           ${hasLog ? `<button class="xbtn" id="xb-${token}" onclick="Dashboard.toggleLog('${token}')">▸ View access log</button>` : ''}
         </td>
         <td>${_subCell(t)}</td>
         <td>${t.wechat ? `<span style="font-size:.72rem;font-family:'JetBrains Mono',monospace">${esc(t.wechat)}</span>` : '<span style="color:var(--muted2)">—</span>'}</td>
-        <td>${t.price ? `<strong style="color:var(--success);font-size:.82rem">$${t.price.toFixed(2)}</strong>` : '<span style="color:var(--muted2)">—</span>'}</td>
+        <td>${t.price ? `<strong style="color:var(--success);font-size:.82rem">${t.currencySymbol||'$'}${t.price.toFixed(2)}</strong>` : '<span style="color:var(--muted2)">—</span>'}</td>
         <td>${_actionCell(t, token, status)}</td>
       </tr>`;
       return mainRow + _logRow(token, t);
@@ -132,6 +140,8 @@ const Dashboard = (() => {
     const price         = document.getElementById('gen-price').value;
     const instr         = document.getElementById('gen-instr-set').value;
     const postInstr     = document.getElementById('gen-post-instr-set').value;
+    const resellerId    = document.getElementById('gen-reseller-id')?.value.trim() || null;
+    const resellerName  = document.getElementById('gen-reseller-name')?.value.trim() || null;
     const errEl         = document.getElementById('gen-err');
     errEl.classList.remove('show');
 
@@ -143,7 +153,8 @@ const Dashboard = (() => {
     const d = await api('/admin/generate', { adminKey: Store.adminKey, customerName, productId, packageLabel, price: parseFloat(price), instructionSetId: instr || undefined, postInstructionSetId: postInstr || undefined });
     if (!d || d.error) { errEl.textContent = (d && d.error) || 'Failed to generate link.'; errEl.classList.add('show'); return; }
     document.getElementById('gen-link').textContent = d.link;
-    document.getElementById('gen-price-display').textContent = '$' + parseFloat(price).toFixed(2);
+    const sym = (Store.settings||{}).currencySymbol||'$';
+    document.getElementById('gen-price-display').textContent = sym + parseFloat(price).toFixed(2);
     document.getElementById('link-result').classList.add('show');
     document.getElementById('copy-btn').textContent = 'Copy';
     document.getElementById('copy-btn').classList.remove('done');

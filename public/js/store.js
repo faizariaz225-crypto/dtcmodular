@@ -10,7 +10,9 @@
 const Store = (() => {
   let _adminKey      = '';
   let _products      = [];
-  let _revenue       = { total: 0, byProduct: {} };
+  let _revenue       = { total: 0, byProduct: {}, byReseller: {}, resellerTotal: 0, directTotal: 0 };
+  let _settings      = {};
+  let _templates     = [];
   let _tokens        = {};
   let _emailLog      = [];
   let _instructions  = { sets: {} };
@@ -50,7 +52,15 @@ const Store = (() => {
 
     // ── Revenue ───────────────────────────────────────────────────────────────
     get revenue()      { return _revenue; },
-    setRevenue(r)      { _revenue = r || { total: 0, byProduct: {} }; },
+    setRevenue(r)      { _revenue = r || { total: 0, byProduct: {}, byReseller: {}, resellerTotal: 0, directTotal: 0 }; },
+
+    // ── Settings ──────────────────────────────────────────────────────────────
+    get settings()     { return _settings; },
+    setSettings(s)     { _settings = s || {}; },
+
+    // ── Templates (for dropdowns) ─────────────────────────────────────────────
+    get templates()    { return _templates; },
+    setTemplates(t)    { _templates = t || []; },
 
     // ── Bulk load after login ─────────────────────────────────────────────────
     load({ tokens, emailLog, revenue }) {
