@@ -407,7 +407,10 @@
       <div id="creds-box" style="display:none;background:linear-gradient(135deg,#fdf4ff,#f5f3ff);border:1.5px solid #c4b5fd;border-radius:12px;padding:1.1rem 1.2rem;margin-bottom:1rem;text-align:left">
         <div style="font-size:.67rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:#7c3aed;margin-bottom:.6rem">🔑 Your Login Details</div>
         <pre id="creds-content" style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:#3b0764;white-space:pre-wrap;word-break:break-all;line-height:1.7;margin:0"></pre>
-        <button onclick="navigator.clipboard.writeText(document.getElementById('creds-content').textContent).then(()=>{this.textContent='Copied ✓';setTimeout(()=>this.textContent='Copy Login Details',2000)})" style="margin-top:.7rem;background:#7c3aed;color:#fff;border:none;border-radius:7px;padding:.4rem 1rem;font-family:'Inter',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer">Copy Login Details</button>
+        <div style="display:flex;gap:.5rem;margin-top:.7rem;flex-wrap:wrap">
+          <button onclick="navigator.clipboard.writeText(document.getElementById('creds-content').textContent).then(()=>{this.textContent='Copied ✓';setTimeout(()=>this.textContent='Copy Login Details',2000)})" style="background:#7c3aed;color:#fff;border:none;border-radius:7px;padding:.4rem 1rem;font-family:'Inter',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer">Copy Login Details</button>
+          <a id="access-link-btn" href="#" target="_blank" style="display:none;background:#2563eb;color:#fff;border-radius:7px;padding:.4rem 1rem;font-family:'Inter',sans-serif;font-size:.75rem;font-weight:600;text-decoration:none">🔗 Open Access Link</a>
+        </div>
       </div>
 
       <!-- Live countdown -->
@@ -585,6 +588,7 @@
       state.subscriptionExpiresAt = d.subscriptionExpiresAt || null;
       state.credentialsMode     = d.credentialsMode || false;
       state.loginDetails        = d.loginDetails || '';
+      state.accessLink          = d.accessLink   || '';
 
       const isGpt = state.product === 'chatgpt';
       setGptMode(isGpt, state.credentialsMode);
@@ -741,6 +745,7 @@
             subscriptionExpiresAt: d.subscriptionExpiresAt||null,
             credentialsMode: d.credentialsMode||false,
             loginDetails: d.loginDetails||'',
+            accessLink: d.accessLink||'',
             approvedText: d.approvedText||state.approvedText,
             approvedSteps: d.approvedSteps||state.approvedSteps,
             postApprovedText: d.postApprovedText||state.postApprovedText,
@@ -783,9 +788,14 @@
     const dataRowLabel = dataRowEl.querySelector('.oc-label');
     if (state.credentialsMode) {
       dataRowEl.style.display = 'none';
-      if (state.loginDetails) {
+      if (state.loginDetails || state.accessLink) {
         document.getElementById('creds-box').style.display = 'block';
-        document.getElementById('creds-content').textContent = state.loginDetails;
+        if (state.loginDetails) document.getElementById('creds-content').textContent = state.loginDetails;
+        if (state.accessLink) {
+          const linkBtn = document.getElementById('access-link-btn');
+          linkBtn.href = state.accessLink;
+          linkBtn.style.display = '';
+        }
       }
     } else if (isGpt) {
       dataRowLabel.textContent='Product'; document.getElementById('act-data').textContent='ChatGPT Plus';

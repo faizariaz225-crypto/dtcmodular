@@ -115,6 +115,24 @@
     .instr-section-divider{height:1px;background:var(--border);margin:1rem 0 .8rem}
     .modal-section-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:.7rem;padding:.3rem .7rem;background:var(--blue-light);border-radius:6px;display:block}
 
+    /* ── Resellers ────────────────────────────────────────────────────────────── */
+    .reseller-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:.8rem;box-shadow:var(--shadow)}
+    .reseller-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.7rem;gap:1rem;flex-wrap:wrap}
+    .reseller-name{font-size:.92rem;font-weight:700;color:var(--text)}
+    .reseller-id{font-size:.68rem;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:.1rem}
+    .reseller-revenue{font-size:1.1rem;font-weight:700;color:var(--success);font-family:'JetBrains Mono',monospace}
+    .reseller-count{font-size:.68rem;color:var(--muted);margin-top:.1rem;text-align:right}
+    .reseller-sales{border-top:1px solid var(--border);padding-top:.6rem}
+    .reseller-sale-row{display:grid;grid-template-columns:1fr 1fr 90px 60px;gap:.4rem;font-size:.73rem;padding:.25rem 0;border-bottom:1px solid #f1f5f9;align-items:center}
+    .reseller-sale-row:last-child{border-bottom:none}
+    .rs-name{font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .rs-pkg{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .rs-date{color:var(--muted2);font-size:.67rem}
+    .rs-price{font-weight:700;color:var(--success);text-align:right;font-family:'JetBrains Mono',monospace}
+    /* ── Settings page ────────────────────────────────────────────────────────── */
+    .setting-block{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+    .setting-block-title{font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:.3rem}
+    .setting-block-sub{font-size:.73rem;color:var(--muted);margin-bottom:.9rem;line-height:1.5}
     /* ── Bulk Email & Template Editor ────────────────────────────────────────── */
     .email-layout{display:grid;grid-template-columns:240px 1fr 360px;gap:1.2rem;align-items:start}
     @media(max-width:1200px){.email-layout{grid-template-columns:220px 1fr}}
@@ -333,6 +351,9 @@
       <div class="nav-item" onclick="Shell.navigate('revenue', this)">
         <span class="icon">💰</span>Revenue
       </div>
+      <div class="nav-item" onclick="Shell.navigate('resellers', this)">
+        <span class="icon">🤝</span>Resellers
+      </div>
       <div class="nav-sec" style="margin-top:.5rem">Catalogue</div>
       <div class="nav-item" onclick="Shell.navigate('products', this)">
         <span class="icon">📦</span>Products
@@ -343,6 +364,9 @@
       </div>
       <div class="nav-item" onclick="Shell.navigate('notifications', this)">
         <span class="icon">🔔</span>Notifications
+      </div>
+      <div class="nav-item" onclick="Shell.navigate('settings', this)">
+        <span class="icon">⚙</span>Settings
       </div>
       <div class="nav-item" onclick="Shell.navigate('campaigns', this)">
         <span class="icon">📨</span>Email Campaigns
@@ -412,6 +436,23 @@
               <option value="">— Same as Pre —</option>
             </select>
           </div>
+        </div>
+
+        <!-- Reseller (optional) -->
+        <div style="margin-top:.5rem">
+          <details style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:.5rem .8rem">
+            <summary style="font-size:.75rem;font-weight:600;color:var(--muted);cursor:pointer;list-style:none">🤝 Reseller tracking (optional)</summary>
+            <div class="form-row" style="margin-top:.7rem;margin-bottom:0">
+              <div class="form-group" style="margin-bottom:0">
+                <label>Reseller ID</label>
+                <input id="gen-reseller-id" placeholder="e.g. reseller-ahmed"/>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label>Reseller Name</label>
+                <input id="gen-reseller-name" placeholder="e.g. Ahmed Khan"/>
+              </div>
+            </div>
+          </details>
         </div>
 
         <button class="btn btn-primary" style="margin-top:.8rem" onclick="Dashboard.generateLink()">
@@ -488,6 +529,19 @@
       <div id="instr-list"><div class="empty">Loading…</div></div>
     </div><!-- /page-instructions -->
 
+
+    <!-- ── PAGE: Resellers ── -->
+    <div class="page" id="page-resellers">
+      <div class="ph">
+        <div class="ph-title">Resellers</div>
+        <div class="ph-sub">Track sales made through resellers separately from direct sales.</div>
+      </div>
+      <div class="stats" style="grid-template-columns:repeat(2,1fr);max-width:420px;margin-bottom:1.4rem">
+        <div class="stat"><div class="stat-val sv-ind" id="reseller-total">$0</div><div class="stat-lbl">Reseller Revenue</div></div>
+        <div class="stat"><div class="stat-val sv-blue" id="direct-total">$0</div><div class="stat-lbl">Direct Revenue</div></div>
+      </div>
+      <div id="reseller-breakdown"><div class="empty">Loading…</div></div>
+    </div><!-- /page-resellers -->
 
     <!-- ── PAGE: Revenue ── -->
     <div class="page" id="page-revenue">
@@ -586,6 +640,20 @@
             <span class="recipient-count-badge" id="recipient-count">0 recipients</span>
           </div>
 
+          <!-- Template type indicator -->
+          <div id="template-type-note" style="display:none;margin-bottom:.6rem"></div>
+
+          <!-- Quick template load dropdown -->
+          <div class="form-group" style="margin-bottom:.8rem">
+            <label>Load Template</label>
+            <div style="display:flex;gap:.5rem">
+              <select id="bulk-template-select" style="flex:1;padding:.5rem .8rem;font-size:.82rem;border:1.5px solid var(--border);border-radius:8px;background:var(--white);outline:none">
+                <option value="">— Select a template to load —</option>
+              </select>
+              <button class="btn btn-ghost-blue btn-sm" onclick="BulkEmail.loadSelectedTemplate()" style="white-space:nowrap">Load →</button>
+            </div>
+          </div>
+
           <!-- Subject -->
           <div class="form-group">
             <label>Subject</label>
@@ -638,6 +706,43 @@
 
       </div>
     </div><!-- /page-campaigns -->
+
+    <!-- ── PAGE: Settings ── -->
+    <div class="page" id="page-settings">
+      <div class="ph">
+        <div class="ph-title">Settings</div>
+        <div class="ph-sub">Configure currency, automatic emails, and global preferences.</div>
+      </div>
+
+      <div class="setting-block">
+        <div class="setting-block-title">Currency</div>
+        <div class="setting-block-sub">Choose the currency shown in admin and on receipts. This applies to all new links. Existing links keep their original currency.</div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Currency</label>
+            <select id="currency-select"></select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;display:flex;align-items:flex-end">
+            <div style="font-size:.8rem;color:var(--muted);background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:.6rem .9rem" id="currency-preview">Example: $29.99</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-block">
+        <div class="setting-block-title">Activation Email</div>
+        <div class="setting-block-sub">Automatically send this email template to the customer when you approve their link. Leave blank to disable auto-send.</div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Email Template to Send on Approval</label>
+          <select id="activation-template-select">
+            <option value="">— No auto email —</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="Settings.save()">Save Settings</button>
+      <div class="msg ok" id="settings-ok"></div>
+      <div class="msg err" id="settings-err"></div>
+    </div><!-- /page-settings -->
 
     <!-- ── PAGE: Email Config ── -->
     <div class="page" id="page-email">
@@ -838,8 +943,14 @@
       <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;padding-left:2.4rem">When enabled, customers only provide WeChat + email. Login details you enter below are shown to them after approval.</div>
     </div>
     <div id="creds-details-wrap" style="display:none;margin-bottom:.9rem">
-      <label>Login Details <span style="font-weight:400;color:var(--muted)">(shown to customer after approval)</span></label>
-      <textarea id="prod-login-details" rows="4" placeholder="e.g.&#10;Website: https://claude.ai&#10;Email: shared@example.com&#10;Password: ••••••••&#10;Notes: Log out after each session"></textarea>
+      <div class="form-group">
+        <label>Login Details <span style="font-weight:400;color:var(--muted)">(shown to customer after approval)</span></label>
+        <textarea id="prod-login-details" rows="4" placeholder="e.g.&#10;Email: shared@example.com&#10;Password: ••••••••&#10;Notes: Log out after each session"></textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>Access Link <span style="font-weight:400;color:var(--muted)">(optional — shown as a clickable button to customer)</span></label>
+        <input id="prod-access-link" placeholder="e.g. https://claude.ai or https://chat.openai.com"/>
+      </div>
     </div>
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
@@ -871,6 +982,8 @@
 <script src="js/instructions.js"></script>
 <script src="js/email.js"></script>
 <script src="js/modals.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/resellers.js"></script>
 <script src="js/bulk-email.js"></script>
 <script src="js/products.js"></script>
 <script src="js/revenue.js"></script>
