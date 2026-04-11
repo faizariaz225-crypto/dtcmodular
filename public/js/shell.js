@@ -29,6 +29,7 @@ const Shell = (() => {
     if (pageId === 'settings')     Settings.load();
     if (pageId === 'revenue')      Revenue.render();
     if (pageId === 'notifications')  { Notifications.init(); Notifications.load(); }
+    if (pageId === 'landing')         Landing.load();
   };
 
   // Called by nav-items: onclick="Shell.navigate('dashboard', this)"
