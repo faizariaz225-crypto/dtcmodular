@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DTC — Digital Tools Corner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;0,900;1,400;1,700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink:       #0a0f1e;
+  --ink2:      #1a2035;
+  --blue:      #1a4fd6;
+  --blue-mid:  #2563eb;
+  --blue-lt:   #e8f0fe;
+  --blue-glow: rgba(26,79,214,.22);
+  --cream:     #f8f6f1;
+  --gold:      #c8a85a;
+  --gold-lt:   #f5ead8;
+  --white:     #ffffff;
+  --muted:     #6b7897;
+  --border:    rgba(10,15,30,.1);
+  --serif:     'Playfair Display', Georgia, serif;
+  --sans:      'Lato', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--white);
+  color: var(--ink);
+  overflow-x: hidden;
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: .01em;
+}
+
+/* NAV */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+  padding: 1.4rem 3rem;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background .4s, box-shadow .4s;
+}
+.nav.scrolled {
+  background: rgba(255,255,255,.94);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 1px 0 var(--border);
+}
+.nav-logo {
+  font-family: var(--serif);
+  font-size: 1.35rem; font-weight: 700;
+  color: var(--ink); letter-spacing: -.01em;
+  text-decoration: none;
+  display: flex; align-items: baseline; gap: .5rem;
+}
+.nav-logo span {
+  font-size: .62rem; font-family: var(--sans); font-weight: 400;
+  color: var(--muted); letter-spacing: .1em; text-transform: uppercase;
+  align-self: center; margin-left: .1rem;
+}
+.nav-links { display: flex; align-items: center; gap: .3rem; }
+.nav-a {
+  font-size: .78rem; font-weight: 400;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); text-decoration: none;
+  padding: .4rem .8rem; border-radius: 6px; transition: color .2s;
+}
+.nav-a:hover { color: var(--ink); }
+.nav-btn {
+  font-size: .75rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--white); background: var(--blue); border: none;
+  padding: .65rem 1.5rem; border-radius: 6px; cursor: pointer;
+  text-decoration: none; transition: all .22s;
+}
+.nav-btn:hover { background: var(--ink); transform: translateY(-1px); }
+@media(max-width:700px) { .nav-links { display: none; } .nav { padding: 1.2rem 1.5rem; } }
+
+/* HERO */
+.hero {
+  min-height: 100vh; background: var(--ink);
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 0 0 5rem;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 70% 30%, rgba(26,79,214,.35) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 20% 80%, rgba(200,168,90,.12) 0%, transparent 60%);
+}
+.hero-noise {
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: .035; mix-blend-mode: overlay;
+}
+.hero-line {
+  position: absolute; top: 0; bottom: 0; width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,.07) 30%, rgba(255,255,255,.07) 70%, transparent);
+}
+.hero-line:nth-child(1) { left: 25%; }
+.hero-line:nth-child(2) { left: 50%; }
+.hero-line:nth-child(3) { left: 75%; }
+.hero-orb {
+  position: absolute; top: 18%; right: 12%;
+  width: 340px; height: 340px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(26,79,214,.55), rgba(26,79,214,.1) 60%, transparent);
+  border: 1px solid rgba(26,79,214,.3);
+  animation: orbFloat 8s ease-in-out infinite;
+}
+.hero-orb::after {
+  content: ''; position: absolute; inset: 30px;
+  border-radius: 50%; border: 1px solid rgba(255,255,255,.07);
+}
+@keyframes orbFloat { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-20px) scale(1.03)} }
+@media(max-width:768px) { .hero-orb { width:200px; height:200px; right:5%; top:10%; } }
+
+.hero-content { position: relative; z-index: 2; padding: 0 3rem; max-width: 1200px; }
+@media(max-width:700px) { .hero-content { padding: 0 1.5rem; } }
+
+.hero-eyebrow {
+  font-family: var(--sans); font-size: .72rem; font-weight: 700;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--gold);
+  margin-bottom: 1.6rem; opacity: 0; animation: rise .8s .2s ease forwards;
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(3rem, 7vw, 6.5rem);
+  font-weight: 900; line-height: 1.0; letter-spacing: -.03em; color: var(--white);
+  margin-bottom: 1.4rem; opacity: 0; animation: rise .9s .35s ease forwards;
+}
+.hero h1 em {
+  font-style: italic; color: transparent;
+  background: linear-gradient(135deg, #5c9aff, #a8c8ff);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  font-family: var(--sans); font-size: clamp(.95rem, 1.6vw, 1.12rem);
+  font-weight: 300; color: rgba(255,255,255,.55);
+  max-width: 520px; line-height: 1.8; margin-bottom: 2.8rem;
+  opacity: 0; animation: rise .9s .5s ease forwards;
+}
+.hero-actions {
+  display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap;
+  opacity: 0; animation: rise .9s .65s ease forwards;
+}
+.btn-hero-main {
+  font-family: var(--sans); font-size: .82rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink); background: var(--white); border: none;
+  padding: 1rem 2.5rem; border-radius: 6px; cursor: pointer;
+  text-decoration: none; transition: all .25s;
+}
+.btn-hero-main:hover { background: var(--gold); transform: translateY(-2px); }
+.btn-hero-ghost {
+  font-family: var(--sans); font-size: .82rem; font-weight: 400;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: rgba(255,255,255,.65); text-decoration: none;
+  display: flex; align-items: center; gap: .6rem; transition: color .2s;
+}
+.btn-hero-ghost:hover { color: var(--white); }
+.btn-hero-ghost::after {
+  content: ''; display: inline-block; width: 30px; height: 1px;
+  background: currentColor; transition: width .25s;
+}
+.btn-hero-ghost:hover::after { width: 50px; }
+
+.hero-stats {
+  position: relative; z-index: 2;
+  display: grid; grid-template-columns: repeat(4,1fr);
+  border-top: 1px solid rgba(255,255,255,.08);
+  margin: 5rem 3rem 0;
+  opacity: 0; animation: rise .9s .8s ease forwards;
+}
+@media(max-width:700px) { .hero-stats { margin: 3rem 1.5rem 0; grid-template-columns: repeat(2,1fr); } }
+.hstat { padding: 2rem 1.5rem; border-right: 1px solid rgba(255,255,255,.08); }
+.hstat:last-child { border-right: none; }
+@media(max-width:700px) {
+  .hstat:nth-child(2) { border-right: none; }
+  .hstat:nth-child(3) { border-top: 1px solid rgba(255,255,255,.08); }
+  .hstat:nth-child(4) { border-top: 1px solid rgba(255,255,255,.08); border-right: none; }
+}
+.hstat-n {
+  font-family: var(--serif); font-size: clamp(2rem,3.5vw,2.8rem);
+  font-weight: 700; color: var(--white); letter-spacing: -.03em;
+  line-height: 1; margin-bottom: .4rem;
+}
+.hstat-l {
+  font-family: var(--sans); font-size: .72rem; font-weight: 400;
+  letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.4);
+}
+
+@keyframes rise { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none} }
+
+/* TICKER STRIP */
+.ticker-section { background: var(--blue); padding: 0; overflow: hidden; }
+.ticker-inner {
+  display: flex; align-items: center; height: 52px;
+  overflow: hidden; position: relative;
+}
+.ticker-label {
+  flex-shrink: 0; font-family: var(--sans); font-size: .66rem; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase; color: rgba(255,255,255,.5);
+  padding: 0 1.8rem 0 2.2rem; border-right: 1px solid rgba(255,255,255,.2);
+  height: 100%; display: flex; align-items: center;
+  background: rgba(0,0,0,.12); white-space: nowrap; z-index: 2;
+}
+.ticker-track {
+  display: flex; align-items: center;
+  animation: tickerScroll 38s linear infinite;
+  white-space: nowrap;
+}
+.ticker-track:hover { animation-play-state: paused; }
+.tick-item {
+  display: inline-flex; align-items: center; gap: 2rem;
+  padding: 0 2rem; font-family: var(--sans); font-size: .82rem;
+  font-weight: 400; letter-spacing: .04em; color: rgba(255,255,255,.9);
+  border-right: 1px solid rgba(255,255,255,.15); height: 52px;
+}
+.tick-sep { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.35); flex-shrink: 0; }
+@keyframes tickerScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* ABOUT */
+.about-section { background: var(--cream); padding: 8rem 3rem; }
+@media(max-width:700px) { .about-section { padding: 5rem 1.5rem; } }
+.about-grid {
+  max-width: 1180px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 6rem; align-items: center;
+}
+@media(max-width:900px) { .about-grid { grid-template-columns: 1fr; gap: 3rem; } }
+.about-eyebrow {
+  font-family: var(--sans); font-size: .68rem; font-weight: 700;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.2rem;
+}
+.about-h {
+  font-family: var(--serif); font-size: clamp(2rem,3.5vw,3rem);
+  font-weight: 700; color: var(--ink); letter-spacing: -.03em;
+  line-height: 1.2; margin-bottom: 1.4rem;
+}
+.about-p { font-size: 1rem; font-weight: 300; color: var(--muted); line-height: 1.85; margin-bottom: 2rem; }
+.about-features { display: flex; flex-direction: column; gap: 1.4rem; }
+.about-feat {
+  display: flex; align-items: flex-start; gap: 1.2rem;
+  padding-bottom: 1.4rem; border-bottom: 1px solid var(--border);
+}
+.about-feat:last-child { border-bottom: none; padding-bottom: 0; }
+.af-num {
+  font-family: var(--serif); font-size: 1.4rem; font-weight: 700;
+  color: var(--blue); opacity: .3; flex-shrink: 0; line-height: 1; margin-top: .05rem; min-width: 2rem;
+}
+.af-t { font-family: var(--sans); font-size: .9rem; font-weight: 700; color: var(--ink); margin-bottom: .3rem; letter-spacing: .01em; }
+.af-d { font-size: .83rem; font-weight: 300; color: var(--muted); line-height: 1.6; }
+
+.av-card {
+  background: var(--ink); border-radius: 20px; padding: 2.8rem;
+  position: relative; overflow: hidden;
+  box-shadow: 0 32px 80px rgba(10,15,30,.22);
+}
+.av-card::before {
+  content: ''; position: absolute; top: -80px; right: -80px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(26,79,214,.4), transparent 65%);
+  border-radius: 50%;
+}
+.av-eyebrow {
+  font-family: var(--sans); font-size: .65rem; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase;
+  color: rgba(255,255,255,.35); margin-bottom: 1.6rem;
+}
+.av-platform {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.2rem; border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px; margin-bottom: .6rem; transition: background .2s; cursor: default;
+}
+.av-platform:hover { background: rgba(255,255,255,.04); }
+.av-pname { font-family: var(--sans); font-size: .88rem; font-weight: 400; color: rgba(255,255,255,.85); }
+.av-ptag {
+  font-family: var(--sans); font-size: .62rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--blue-mid); background: rgba(37,99,235,.15);
+  border: 1px solid rgba(37,99,235,.25); border-radius: 4px; padding: .18rem .6rem;
+}
+.av-divider { height: 1px; background: rgba(255,255,255,.06); margin: 1rem 0; }
+.av-note { font-size: .75rem; font-weight: 300; color: rgba(255,255,255,.3); line-height: 1.6; }
+
+/* TOOLS TICKERS */
+.tools-section { background: var(--white); padding: 7rem 3rem; overflow: hidden; }
+@media(max-width:700px) { .tools-section { padding: 5rem 1.5rem; } }
+.tools-top {
+  max-width: 1180px; margin: 0 auto 4rem;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; flex-wrap: wrap;
+}
+.tools-h {
+  font-family: var(--serif); font-size: clamp(2rem,3.5vw,3rem);
+  font-weight: 700; color: var(--ink); letter-spacing: -.03em; line-height: 1.2;
+}
+.tools-h em { font-style: italic; color: var(--blue); }
+.tools-sub { font-size: .9rem; font-weight: 300; color: var(--muted); line-height: 1.75; max-width: 380px; }
+
+.tickers-wrap { display: flex; flex-direction: column; gap: 1rem; position: relative; }
+.tickers-wrap::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 120px;
+  background: linear-gradient(to right, var(--white), transparent); z-index: 2; pointer-events: none;
+}
+.tickers-wrap::after {
+  content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 120px;
+  background: linear-gradient(to left, var(--white), transparent); z-index: 2; pointer-events: none;
+}
+.tool-ticker-row { display: flex; overflow: hidden; }
+.tool-ticker-track {
+  display: flex; gap: .7rem; flex-shrink: 0;
+  animation: toolScroll 30s linear infinite;
+}
+.tool-ticker-row.rev .tool-ticker-track { animation: toolScrollRev 33s linear infinite; }
+.tool-ticker-row.slow .tool-ticker-track { animation-duration: 42s; }
+.tool-ticker-track:hover { animation-play-state: paused; }
+.tool-pill {
+  display: inline-flex; align-items: center; gap: .65rem;
+  padding: .65rem 1.4rem; background: var(--white);
+  border: 1.5px solid var(--border); border-radius: 99px;
+  font-family: var(--sans); font-size: .82rem; font-weight: 400; color: var(--ink2);
+  white-space: nowrap; cursor: default; transition: all .2s; flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(10,15,30,.05);
+}
+.tool-pill:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-lt); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,79,214,.12); }
+.tool-pill-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); opacity: .35; flex-shrink: 0; }
+.tool-pill:hover .tool-pill-dot { opacity: 1; }
+@keyframes toolScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+@keyframes toolScrollRev { from{transform:translateX(-50%)} to{transform:translateX(0)} }
+
+/* ACADEMIA */
+.academia-section {
+  background: var(--ink); padding: 8rem 3rem;
+  position: relative; overflow: hidden;
+}
+@media(max-width:700px) { .academia-section { padding: 5rem 1.5rem; } }
+.academia-section::before {
+  content: ''; position: absolute; top: -200px; right: -100px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(26,79,214,.2), transparent 65%);
+  border-radius: 50%; pointer-events: none;
+}
+.acad-inner { max-width: 1180px; margin: 0 auto; }
+.acad-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 2rem; flex-wrap: wrap; margin-bottom: 4rem;
+}
+.acad-eyebrow {
+  font-family: var(--sans); font-size: .68rem; font-weight: 700;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem;
+}
+.acad-h {
+  font-family: var(--serif); font-size: clamp(2rem,3.5vw,3rem);
+  font-weight: 700; color: var(--white); letter-spacing: -.03em; line-height: 1.2;
+}
+.acad-sub { font-size: .9rem; font-weight: 300; color: rgba(255,255,255,.45); line-height: 1.8; max-width: 340px; }
+.acad-grid {
+  display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr));
+  gap: 1px; background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.06); border-radius: 16px; overflow: hidden;
+}
+.acad-card { background: var(--ink2); padding: 2.2rem; transition: background .25s; cursor: default; }
+.acad-card:hover { background: rgba(26,79,214,.15); }
+.ac-category {
+  font-family: var(--sans); font-size: .62rem; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--blue-mid); margin-bottom: .8rem;
+}
+.ac-name {
+  font-family: var(--serif); font-size: 1.15rem; font-weight: 700;
+  color: var(--white); letter-spacing: -.01em; margin-bottom: .6rem; line-height: 1.25;
+}
+.ac-desc { font-size: .8rem; font-weight: 300; color: rgba(255,255,255,.45); line-height: 1.65; }
+.ac-line {
+  width: 24px; height: 2px; background: var(--blue); border-radius: 99px;
+  margin-top: 1.2rem; transition: width .25s;
+}
+.acad-card:hover .ac-line { width: 48px; }
+
+/* CONTACT */
+.contact-section { background: var(--cream); padding: 8rem 3rem; }
+@media(max-width:700px) { .contact-section { padding: 5rem 1.5rem; } }
+.contact-inner { max-width: 1180px; margin: 0 auto; }
+.contact-top { text-align: center; margin-bottom: 4rem; }
+.contact-eyebrow {
+  font-family: var(--sans); font-size: .68rem; font-weight: 700;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--blue); margin-bottom: 1rem;
+}
+.contact-h {
+  font-family: var(--serif); font-size: clamp(2rem,4vw,3.2rem);
+  font-weight: 700; color: var(--ink); letter-spacing: -.03em; line-height: 1.15; margin-bottom: .9rem;
+}
+.contact-h em { font-style: italic; }
+.contact-desc { font-size: 1rem; font-weight: 300; color: var(--muted); max-width: 480px; margin: 0 auto; line-height: 1.8; }
+.contact-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+@media(max-width:820px) { .contact-grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; } }
+.contact-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 16px; padding: 2.8rem 2.2rem; text-align: center;
+  transition: all .25s; cursor: default;
+}
+.contact-card:hover { border-color: var(--blue); transform: translateY(-4px); box-shadow: 0 20px 50px rgba(26,79,214,.1); }
+.cc-label {
+  font-family: var(--sans); font-size: .65rem; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.2rem;
+}
+.cc-title { font-family: var(--serif); font-size: 1.25rem; font-weight: 700; color: var(--ink); letter-spacing: -.02em; margin-bottom: .6rem; }
+.cc-desc { font-size: .82rem; font-weight: 300; color: var(--muted); line-height: 1.7; margin-bottom: 1.6rem; }
+.cc-value {
+  display: inline-block; font-family: 'Lato', monospace; font-size: .88rem; font-weight: 700;
+  color: var(--blue); background: var(--blue-lt); border: 1px solid rgba(26,79,214,.15);
+  border-radius: 8px; padding: .55rem 1.3rem; text-decoration: none; transition: all .22s; letter-spacing: .02em;
+}
+.cc-value:hover { background: var(--blue); color: var(--white); box-shadow: 0 6px 20px var(--blue-glow); }
+.qr-wrap { width: 88px; height: 88px; margin: 0 auto 1rem; position: relative; border-radius: 10px; overflow: hidden; border: 1.5px solid rgba(26,79,214,.2); }
+.qr-canvas { width: 100%; height: 100%; display: block; }
+
+/* FOOTER */
+footer { background: var(--ink); padding: 3.5rem 3rem 2.5rem; }
+@media(max-width:700px) { footer { padding: 3rem 1.5rem 2rem; } }
+.foot-inner {
+  max-width: 1180px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  gap: 2rem; padding-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.foot-brand { font-family: var(--serif); font-size: 1.15rem; font-weight: 700; color: var(--white); letter-spacing: -.02em; }
+.foot-brand small {
+  display: block; font-family: var(--sans); font-size: .65rem; font-weight: 400;
+  letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.3); margin-top: .2rem;
+}
+.foot-nav { display: flex; gap: 2rem; flex-wrap: wrap; }
+.foot-a { font-size: .78rem; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.35); text-decoration: none; transition: color .2s; }
+.foot-a:hover { color: rgba(255,255,255,.8); }
+.foot-bottom { max-width: 1180px; margin: 1.8rem auto 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.foot-contact-strip { display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: .75rem; font-weight: 300; color: rgba(255,255,255,.35); }
+.foot-contact-strip span { color: rgba(255,255,255,.6); }
+.foot-copy { font-size: .72rem; color: rgba(255,255,255,.25); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <a class="nav-logo" href="#">DTC <span>Digital Tools Corner</span></a>
+  <div class="nav-links">
+    <a class="nav-a" href="#about">About</a>
+    <a class="nav-a" href="#tools">Tools</a>
+    <a class="nav-a" href="#academia">Academia</a>
+    <a class="nav-a" href="#contact">Contact</a>
+    <a class="nav-btn" href="#contact">Get Access</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-noise"></div>
+  <div class="hero-line"></div>
+  <div class="hero-line"></div>
+  <div class="hero-line"></div>
+  <div class="hero-orb"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Trusted by 2,000+ active customers worldwide</p>
+    <h1>Your Gateway to<br><em>AI & Academic</em><br>Excellence</h1>
+    <p class="hero-sub">Digital Tools Corner provides affordable, reliable access to premium AI and academic subscription tools for students, researchers, and professionals worldwide.</p>
+    <div class="hero-actions">
+      <a class="btn-hero-main" href="#contact">Get Access Now</a>
+      <a class="btn-hero-ghost" href="#tools">Browse Tools</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hstat"><div class="hstat-n">2,000+</div><div class="hstat-l">Active Customers</div></div>
+    <div class="hstat"><div class="hstat-n">10,000+</div><div class="hstat-l">Accounts Activated</div></div>
+    <div class="hstat"><div class="hstat-n">100+</div><div class="hstat-l">Tools Available</div></div>
+    <div class="hstat"><div class="hstat-n">50+</div><div class="hstat-l">Countries Served</div></div>
+  </div>
+</section>
+
+<!-- TICKER STRIP -->
+<div class="ticker-section">
+  <div class="ticker-inner">
+    <div class="ticker-label">Platforms</div>
+    <div class="ticker-track" id="ticker-main"></div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="about-section" id="about">
+  <div class="about-grid">
+    <div>
+      <p class="about-eyebrow">About DTC</p>
+      <h2 class="about-h">Premium AI Access,<br>Made Affordable</h2>
+      <p class="about-p">DTC is a trusted platform dedicated to providing affordable and reliable access to premium AI and academic subscription tools. We specialize in offering official, dedicated access to top-tier platforms — helping you enhance productivity, research quality, and academic performance.</p>
+      <div class="about-features">
+        <div class="about-feat">
+          <div class="af-num">01</div>
+          <div class="af-body">
+            <div class="af-t">Official &amp; Dedicated Access</div>
+            <div class="af-d">Genuine, verified access to top-tier AI platforms. No shared or degraded accounts — every activation is personal.</div>
+          </div>
+        </div>
+        <div class="about-feat">
+          <div class="af-num">02</div>
+          <div class="af-body">
+            <div class="af-t">Student &amp; Researcher Focused</div>
+            <div class="af-d">Designed for academics who need high-quality tools without enterprise-level pricing burdens.</div>
+          </div>
+        </div>
+        <div class="about-feat">
+          <div class="af-num">03</div>
+          <div class="af-body">
+            <div class="af-t">Instant Activation &amp; Global Support</div>
+            <div class="af-d">Get activated within hours. Multilingual support via WeChat, WhatsApp, and Email across 50+ countries.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="av-card">
+        <div class="av-eyebrow">Featured Platforms</div>
+        <div class="av-platform"><div class="av-pname">ChatGPT Plus</div><div class="av-ptag">AI Chat</div></div>
+        <div class="av-platform"><div class="av-pname">ChatGPT Enterprise</div><div class="av-ptag">Enterprise</div></div>
+        <div class="av-platform"><div class="av-pname">Grammarly Premium</div><div class="av-ptag">Writing</div></div>
+        <div class="av-platform"><div class="av-pname">QuillBot Premium</div><div class="av-ptag">Paraphrase</div></div>
+        <div class="av-platform"><div class="av-pname">GitHub Copilot</div><div class="av-ptag">Coding AI</div></div>
+        <div class="av-platform"><div class="av-pname">Midjourney</div><div class="av-ptag">Image AI</div></div>
+        <div class="av-divider"></div>
+        <div class="av-note">+ 94 more platforms across AI writing, research, coding, image generation, and productivity.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS TICKERS -->
+<section class="tools-section" id="tools">
+  <div class="tools-top">
+    <div>
+      <h2 class="tools-h">100+ <em>AI & Academic</em><br>Subscription Tools</h2>
+    </div>
+    <p class="tools-sub">Access the world's leading AI platforms and research tools at a fraction of the standard price. Hover any row to pause.</p>
+  </div>
+  <div class="tickers-wrap" id="tickers-wrap"></div>
+</section>
+
+<!-- ACADEMIA -->
+<section class="academia-section" id="academia">
+  <div class="acad-inner">
+    <div class="acad-header">
+      <div>
+        <p class="acad-eyebrow">Academia Tools</p>
+        <h2 class="acad-h">Built for Academic<br>Excellence</h2>
+      </div>
+      <p class="acad-sub">From writing and paraphrasing to citation management and plagiarism detection — everything researchers need.</p>
+    </div>
+    <div class="acad-grid" id="acad-grid"></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="contact-inner">
+    <div class="contact-top">
+      <p class="contact-eyebrow">Get In Touch</p>
+      <h2 class="contact-h">Ready to <em>Get Started?</em></h2>
+      <p class="contact-desc">Contact us via any of the channels below. We typically respond within a few hours.</p>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-card">
+        <div class="cc-label">Email</div>
+        <div class="cc-title">Write to Us</div>
+        <p class="cc-desc">Reach us directly for subscriptions, questions, or support inquiries at any time.</p>
+        <a class="cc-value" href="mailto:dtc@dtc1.shop">dtc@dtc1.shop</a>
+      </div>
+      <div class="contact-card">
+        <div class="cc-label">WeChat</div>
+        <div class="cc-title">Scan &amp; Chat</div>
+        <p class="cc-desc">Scan the QR code with WeChat to connect with our team directly and instantly.</p>
+        <div class="qr-wrap"><canvas class="qr-canvas" id="qr-canvas" width="88" height="88"></canvas></div>
+        <div style="font-size:.72rem;color:var(--muted);font-weight:300">Scan with WeChat</div>
+      </div>
+      <div class="contact-card">
+        <div class="cc-label">WhatsApp</div>
+        <div class="cc-title">Message Us</div>
+        <p class="cc-desc">Fast responses and order processing via WhatsApp, available every day.</p>
+        <a class="cc-value" href="https://wa.me/8619738122807" target="_blank">+86 197 3812 2807</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-inner">
+    <div class="foot-brand">DTC<small>Digital Tools Corner</small></div>
+    <nav class="foot-nav">
+      <a class="foot-a" href="#about">About</a>
+      <a class="foot-a" href="#tools">Tools</a>
+      <a class="foot-a" href="#academia">Academia</a>
+      <a class="foot-a" href="#contact">Contact</a>
+    </nav>
+  </div>
+  <div class="foot-bottom">
+    <div class="foot-contact-strip">
+      <div>Email <span>dtc@dtc1.shop</span></div>
+      <div>WhatsApp <span>+86 197 3812 2807</span></div>
+      <div>WeChat <span>Available</span></div>
+    </div>
+    <div class="foot-copy">2025 Digital Tools Corner (DTC)</div>
+  </div>
+</footer>
+
+<script>
+const TOOLS_ROW1=['ChatGPT Plus','ChatGPT Enterprise','Claude Pro','Claude Enterprise','Gemini Advanced','Grok Premium','Perplexity Pro','Copy.ai Pro','Jasper AI','Writesonic','Rytr Pro','DeepL Pro','Wordtune Premium'];
+const TOOLS_ROW2=['GitHub Copilot','Cursor AI Pro','Tabnine Pro','Codeium Pro','Replit Core','Amazon CodeWhisperer','Sourcegraph Cody','Phind Pro','Consensus AI','Elicit Pro','SciSpace Pro','Wolfram Alpha Pro'];
+const TOOLS_ROW3=['Midjourney','Stable Diffusion','Adobe Firefly','Leonardo AI','Runway ML Pro','Pika Labs','Synthesia Pro','HeyGen Pro','Notion AI','Otter.ai Pro','ElevenLabs Pro','Descript Pro','Gamma AI'];
+
+const TICKER_ITEMS=['ChatGPT Plus','ChatGPT Enterprise','Grammarly Premium','QuillBot Premium','GitHub Copilot','Midjourney','Gemini Advanced','Claude Pro','Turnitin','Perplexity Pro','Notion AI','ElevenLabs Pro','SciSpace Pro'];
+
+const ACAD_TOOLS=[
+  {cat:'Writing',   name:'Grammarly Premium', desc:'Advanced grammar, style and plagiarism checking for flawless academic writing.'},
+  {cat:'Paraphrase',name:'QuillBot Premium',  desc:'AI-powered paraphrasing, summarising and rewriting for academic papers.'},
+  {cat:'Integrity', name:'Turnitin',          desc:'Industry-standard plagiarism detection trusted by universities worldwide.'},
+  {cat:'Citations', name:'Zotero Pro',        desc:'Professional citation and reference management for research projects.'},
+  {cat:'Journals',  name:'JSTOR Access',      desc:'Full access to thousands of academic journals, books and primary sources.'},
+  {cat:'Research',  name:'SciSpace Pro',      desc:'AI-powered research assistant for reading, writing and literature review.'},
+  {cat:'Computing', name:'Wolfram Alpha Pro', desc:'Computational knowledge engine for mathematics, science and engineering.'},
+  {cat:'Textbooks', name:'Chegg Study Pro',   desc:'Expert Q&A, textbook solutions and step-by-step explanations for students.'},
+];
+
+window.addEventListener('scroll',()=>{
+  document.getElementById('nav').classList.toggle('scrolled',window.scrollY>40);
+},{passive:true});
+
+function buildTickerStrip(){
+  const track=document.getElementById('ticker-main');
+  if(!track)return;
+  const items=[...TICKER_ITEMS,...TICKER_ITEMS];
+  track.innerHTML=items.map(t=>`<span class="tick-item"><span class="tick-sep"></span>${t}</span>`).join('');
+}
+
+function makeRow(tools,rev,slow){
+  const doubled=[...tools,...tools];
+  const pills=doubled.map(t=>`<span class="tool-pill"><span class="tool-pill-dot"></span>${t}</span>`).join('');
+  const d=document.createElement('div');
+  d.className='tool-ticker-row'+(rev?' rev':'')+(slow?' slow':'');
+  d.innerHTML=`<div class="tool-ticker-track">${pills}</div><div class="tool-ticker-track">${pills}</div>`;
+  return d;
+}
+
+function buildToolTickers(){
+  const wrap=document.getElementById('tickers-wrap');
+  if(!wrap)return;
+  wrap.appendChild(makeRow(TOOLS_ROW1,false,false));
+  wrap.appendChild(makeRow(TOOLS_ROW2,true,false));
+  wrap.appendChild(makeRow(TOOLS_ROW3,false,true));
+}
+
+function buildAcadGrid(){
+  const el=document.getElementById('acad-grid');
+  if(!el)return;
+  el.innerHTML=ACAD_TOOLS.map(t=>`
+    <div class="acad-card">
+      <div class="ac-category">${t.cat}</div>
+      <div class="ac-name">${t.name}</div>
+      <div class="ac-desc">${t.desc}</div>
+      <div class="ac-line"></div>
+    </div>`).join('');
+}
+
+function drawQR(){
+  const canvas=document.getElementById('qr-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const pattern=[
+    [1,1,1,1,1,1,1,0,0,0,0],
+    [1,0,0,0,0,0,1,0,1,1,0],
+    [1,0,1,1,1,0,1,0,0,1,1],
+    [1,0,1,1,1,0,1,0,1,0,0],
+    [1,0,1,1,1,0,1,0,1,1,0],
+    [1,0,0,0,0,0,1,0,0,1,1],
+    [1,1,1,1,1,1,1,0,1,0,1],
+    [0,0,0,0,0,0,0,0,0,1,0],
+    [0,1,1,0,1,0,1,1,1,0,1],
+    [0,0,1,0,0,1,0,1,0,0,1],
+    [0,1,0,1,1,0,1,0,1,1,1],
+  ];
+  const cell=88/11;
+  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,88,88);
+  ctx.fillStyle='#1a4fd6';
+  pattern.forEach((row,r)=>row.forEach((bit,c)=>{
+    if(bit){
+      const x=c*cell+1,y=r*cell+1,w=cell-2;
+      ctx.beginPath();ctx.roundRect(x,y,w,w,1.5);ctx.fill();
+    }
+  }));
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  buildTickerStrip();
+  buildToolTickers();
+  buildAcadGrid();
+  drawQR();
+});
+</script>
+</body>
+</html>

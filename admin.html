@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — DTC Digital Tools Corner</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
+  <!-- Modular CSS -->
+  <link rel="stylesheet" href="css/theme.css"/>
+  <link rel="stylesheet" href="css/layout.css"/>
+
+  <!-- Page-specific component styles (inline — scoped per component) -->
+  <style>
+    /* ── Dashboard ─────────────────────────────────────────────────────────── */
+    .stats { display: grid; grid-template-columns: repeat(7,1fr); gap: .8rem; margin-bottom: 1.3rem; }
+    @media (max-width:1100px) { .stats { grid-template-columns: repeat(4,1fr); } }
+    @media (max-width:700px)  { .stats { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width:480px) { .stats { grid-template-columns: repeat(2,1fr); } }
+    .stat     { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: .9rem 1rem; box-shadow: var(--shadow); }
+    .stat-val { font-size: 1.5rem; font-weight: 700; font-family: 'JetBrains Mono',monospace; color: var(--text); }
+    .stat-lbl { font-size: .61rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-top: .1rem; font-weight: 500; }
+    .sv-blue { color: var(--blue); } .sv-warn { color: var(--warn); }
+    .sv-green{ color: var(--success); } .sv-red { color: var(--error); } .sv-ind { color: #6366f1; }
+
+    .link-result     { display: none; margin-top: 1rem; background: var(--success-bg); border: 1px solid var(--success-border); border-radius: 10px; padding: .9rem 1rem; }
+    .link-result.show{ display: block; }
+    .lr-label { font-size: .63rem; text-transform: uppercase; letter-spacing: .1em; color: var(--success); font-weight: 700; margin-bottom: .45rem; }
+    .lr-row   { display: flex; align-items: center; gap: .5rem; }
+    .lr-text  { font-family: 'JetBrains Mono',monospace; font-size: .7rem; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lr-note  { font-size: .68rem; color: var(--muted); margin-top: .5rem; }
+    .copy-btn { background: var(--white); border: 1.5px solid var(--border); border-radius: 6px; padding: .22rem .55rem; font-size: .66rem; font-family: 'Inter',sans-serif; color: var(--muted); cursor: pointer; transition: all .18s; flex-shrink: 0; font-weight: 600; }
+    .copy-btn:hover, .copy-btn.done { border-color: var(--success); color: var(--success); background: var(--success-bg); }
+
+    .orgid-wrap { display: flex; align-items: flex-start; gap: .35rem; }
+    .orgid-txt  { font-family: 'JetBrains Mono',monospace; font-size: .66rem; color: var(--text); word-break: break-all; line-height: 1.55; flex: 1; }
+
+    .xbtn { background: none; border: none; color: var(--blue); cursor: pointer; font-size: .67rem; font-family: 'Inter',sans-serif; padding: 0; font-weight: 500; display: block; margin-top: .22rem; }
+    .xbtn:hover { text-decoration: underline; }
+    .log-row        { display: none; background: #f8faff; }
+    .log-row.open   { display: table-row; }
+    .log-inner      { padding: .65rem .75rem .65rem 1.8rem; font-size: .63rem; font-family: 'JetBrains Mono',monospace; border-top: 1px solid var(--border); }
+    .log-hdr        { display: grid; grid-template-columns: 140px 110px 1fr; gap: .4rem; font-size: .58rem; color: var(--muted); padding-bottom: .25rem; border-bottom: 1px solid var(--border); margin-bottom: .2rem; text-transform: uppercase; letter-spacing: .07em; font-weight: 600; }
+    .log-entry      { display: grid; grid-template-columns: 140px 110px 1fr; gap: .4rem; padding: .25rem 0; border-bottom: 1px solid #f1f5f9; color: var(--muted); }
+    .log-entry:last-child { border-bottom: none; }
+    .le-t { color: var(--text); } .le-ua { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted2); }
+
+    .sub-exp .days  { font-weight: 700; margin-bottom: .05rem; font-size: .7rem; }
+    .sub-exp.ok .days    { color: var(--success); }
+    .sub-exp.soon .days  { color: var(--warn); }
+    .sub-exp.danger .days{ color: var(--error); }
+    .sub-exp .date  { color: var(--muted); font-size: .66rem; font-family: 'JetBrains Mono',monospace; }
+    .exp-flag       { display: inline-block; border-radius: 4px; font-size: .6rem; font-weight: 600; padding: .07rem .4rem; margin-top: .15rem; }
+    .exp-flag.soon  { background: var(--warn-bg);  border: 1px solid var(--warn-border);  color: var(--warn); }
+    .exp-flag.danger,
+    .exp-flag.expired { background: var(--error-bg); border: 1px solid var(--error-border); color: var(--error); }
+
+    /* Action buttons inside table */
+    .action-wrap  { display: flex; flex-direction: column; gap: .4rem; }
+    .approve-btn  { background: var(--success-bg); border: 1.5px solid var(--success-border); border-radius: 7px; padding: .3rem .75rem; font-family: 'Inter',sans-serif; font-size: .73rem; font-weight: 700; color: var(--success); cursor: pointer; transition: all .18s; white-space: nowrap; }
+    .approve-btn:hover:not(:disabled)  { background: #dcfce7; border-color: #86efac; transform: translateY(-1px); }
+    .approve-btn:disabled  { opacity: .4; cursor: not-allowed; }
+    .decline-btn  { background: var(--error-bg);   border: 1.5px solid var(--error-border);   border-radius: 7px; padding: .3rem .75rem; font-family: 'Inter',sans-serif; font-size: .73rem; font-weight: 700; color: var(--error);   cursor: pointer; transition: all .18s; white-space: nowrap; }
+    .decline-btn:hover:not(:disabled)  { background: #fee2e2; border-color: #fca5a5; transform: translateY(-1px); }
+    /* Generic small action buttons */
+    .action-btn       { border-radius: 7px; padding: .28rem .75rem; font-family: 'Inter',sans-serif; font-size: .72rem; font-weight: 700; cursor: pointer; transition: all .18s; white-space: nowrap; border: 1.5px solid; }
+    .action-btn:hover { transform: translateY(-1px); }
+    .action-btn.deact { background: #f3f4f6; border-color: #d1d5db; color: #6b7280; }
+    .action-btn.deact:hover { background: #e5e7eb; border-color: #9ca3af; }
+    .action-btn.react { background: var(--blue-light); border-color: var(--blue-mid); color: var(--blue); }
+    .action-btn.react:hover { background: #dbeafe; }
+
+    /* ── Customers ─────────────────────────────────────────────────────────── */
+    .cust-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 12px; padding: 1.3rem 1.5rem; margin-bottom: .9rem; box-shadow: var(--shadow); transition: all .2s; }
+    .cust-card:hover { box-shadow: var(--shadow-md); }
+    .cust-card.expiring    { border-color: var(--warn-border);  background: var(--warn-bg); }
+    .cust-card.expired-sub { border-color: var(--error-border); background: var(--error-bg); }
+    .cust-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: .9rem; flex-wrap: wrap; }
+    .cust-nm  { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: .2rem; }
+    .cust-pk  { font-size: .76rem; color: var(--muted); font-weight: 500; }
+    .cust-grid{ display: grid; grid-template-columns: repeat(3,1fr); gap: .55rem .9rem; margin-bottom: .9rem; }
+    @media (max-width:560px) { .cust-grid { grid-template-columns: 1fr 1fr; } }
+    .cf-lbl { font-size: .61rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: .12rem; font-weight: 600; }
+    .cf-val { font-size: .75rem; font-family: 'JetBrains Mono',monospace; color: var(--text); word-break: break-all; }
+    .cf-val.green { color: var(--success); } .cf-val.warn { color: var(--warn); } .cf-val.red { color: var(--error); }
+    .exp-bar-wrap  { margin-bottom: .9rem; }
+    .exp-bar-label { display: flex; justify-content: space-between; font-size: .64rem; color: var(--muted); margin-bottom: .3rem; font-weight: 500; }
+    .exp-bar       { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .exp-bar-fill  { height: 100%; border-radius: 3px; transition: width .5s ease; }
+    .email-actions { display: flex; gap: .4rem; flex-wrap: wrap; }
+
+    /* ── Instructions ──────────────────────────────────────────────────────── */
+    .instr-card    { background: var(--white); border: 1.5px solid var(--border); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: .8rem; box-shadow: var(--shadow); transition: all .2s; }
+    .instr-card:hover { box-shadow: var(--shadow-md); }
+    .instr-header  { display: flex; align-items: center; justify-content: space-between; margin-bottom: .7rem; gap: 1rem; flex-wrap: wrap; }
+    .instr-name    { font-size: .92rem; font-weight: 700; color: var(--text); }
+    .instr-actions { display: flex; gap: .4rem; }
+    .instr-preview { font-size: .75rem; color: var(--muted); line-height: 1.6; background: #f8fafc; border: 1px solid var(--border); border-radius: 7px; padding: .75rem .9rem; }
+    .preview-label { font-size: .65rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .2rem; }
+    .preview-text  { color: var(--text); font-size: .78rem; }
+    .preview-steps { padding-left: 1.2rem; font-size: .73rem; color: var(--muted); }
+
+    /* ── Email ─────────────────────────────────────────────────────────────── */
+    .provider-btns { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+    .gmail-guide   { display: none; background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 10px; padding: 1rem 1.1rem; margin-bottom: 1.2rem; font-size: .79rem; line-height: 1.75; color: var(--muted); }
+    .email-log-tbl th { text-align: left; font-size: .61rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: .4rem .6rem; font-weight: 600; background: #f8fafc; border-bottom: 1px solid var(--border); }
+    .email-log-tbl td { padding: .55rem .6rem; border-bottom: 1px solid var(--border); color: var(--muted); font-size: .72rem; }
+    .email-log-tbl tr:last-child td { border-bottom: none; }
+    .email-log-tbl tr:hover td { background: #f8fafc; }
+
+    /* ── Instruction section labels ──────────────────────────────────────────── */
+    .instr-section-label{font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:4px;padding:.12rem .5rem;display:inline-block;margin-bottom:.4rem}
+    .instr-section-divider{height:1px;background:var(--border);margin:1rem 0 .8rem}
+    .modal-section-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:.7rem;padding:.3rem .7rem;background:var(--blue-light);border-radius:6px;display:block}
+
+    /* ── Resellers ────────────────────────────────────────────────────────────── */
+    .reseller-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:.8rem;box-shadow:var(--shadow)}
+    .reseller-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.7rem;gap:1rem;flex-wrap:wrap}
+    .reseller-name{font-size:.92rem;font-weight:700;color:var(--text)}
+    .reseller-id{font-size:.68rem;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:.1rem}
+    .reseller-revenue{font-size:1.1rem;font-weight:700;color:var(--success);font-family:'JetBrains Mono',monospace}
+    .reseller-count{font-size:.68rem;color:var(--muted);margin-top:.1rem;text-align:right}
+    .reseller-sales{border-top:1px solid var(--border);padding-top:.6rem}
+    .reseller-sale-row{display:grid;grid-template-columns:1fr 1fr 90px 60px;gap:.4rem;font-size:.73rem;padding:.25rem 0;border-bottom:1px solid #f1f5f9;align-items:center}
+    .reseller-sale-row:last-child{border-bottom:none}
+    .rs-name{font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .rs-pkg{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .rs-date{color:var(--muted2);font-size:.67rem}
+    .rs-price{font-weight:700;color:var(--success);text-align:right;font-family:'JetBrains Mono',monospace}
+    /* ── Settings page ────────────────────────────────────────────────────────── */
+    .setting-block{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+    .setting-block-title{font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:.3rem}
+    .setting-block-sub{font-size:.73rem;color:var(--muted);margin-bottom:.9rem;line-height:1.5}
+    /* ── Bulk Email & Template Editor ────────────────────────────────────────── */
+    .email-layout{display:grid;grid-template-columns:240px 1fr 360px;gap:1.2rem;align-items:start}
+    @media(max-width:1200px){.email-layout{grid-template-columns:220px 1fr}}
+    @media(max-width:800px) {.email-layout{grid-template-columns:1fr}}
+
+    /* Template list */
+    .tmpl-panel{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:.9rem;box-shadow:var(--shadow)}
+    .tmpl-panel-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.7rem}
+    .tmpl-item{padding:.65rem .8rem;border-radius:8px;cursor:pointer;border:1.5px solid transparent;margin-bottom:.35rem;transition:all .15s}
+    .tmpl-item:hover{background:#f8fafc;border-color:var(--border)}
+    .tmpl-item.active{background:var(--blue-light);border-color:var(--blue-mid)}
+    .tmpl-item-name{font-size:.8rem;font-weight:600;color:var(--text);margin-bottom:.1rem}
+    .tmpl-item-subject{font-size:.68rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .tmpl-item-actions{display:flex;gap:.3rem;margin-top:.4rem}
+
+    /* Compose panel */
+    .compose-panel{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.3rem 1.4rem;box-shadow:var(--shadow)}
+    .compose-panel-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+    .recipient-bar{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin-bottom:1rem;padding:.7rem .9rem;background:#f8fafc;border:1px solid var(--border);border-radius:8px}
+    .recipient-count-badge{background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:99px;padding:.18rem .65rem;font-size:.72rem;font-weight:700;color:var(--blue);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+    .var-chips{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.8rem}
+    .var-chip{background:#f1f5f9;border:1px solid var(--border);border-radius:5px;padding:.15rem .5rem;font-size:.67rem;font-family:'JetBrains Mono',monospace;color:var(--blue);cursor:pointer;transition:all .15s;font-weight:500}
+    .var-chip:hover{background:var(--blue-light);border-color:var(--blue-mid)}
+    .compose-textarea{width:100%;min-height:220px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:.8rem;line-height:1.6;padding:.8rem;border:1.5px solid var(--border);border-radius:8px;outline:none;transition:border-color .2s}
+    .compose-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+    .send-bar{display:flex;align-items:center;gap:.8rem;margin-top:.9rem;flex-wrap:wrap}
+    .btn-send{background:#15803d;color:#fff;padding:.65rem 1.4rem;font-size:.88rem;font-weight:700;border:none;border-radius:9px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .18s;display:flex;align-items:center;gap:.45rem}
+    .btn-send:hover:not(:disabled){background:#166534;transform:translateY(-1px);box-shadow:0 4px 14px rgba(22,163,74,.3)}
+    .btn-send:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+    /* Preview panel */
+    .preview-panel{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1rem;box-shadow:var(--shadow);position:sticky;top:1.5rem}
+    .preview-panel-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.7rem;display:flex;align-items:center;gap:.4rem}
+    .preview-sample{font-size:.68rem;color:var(--muted);background:#f8fafc;border-radius:5px;padding:.2rem .5rem;font-family:'JetBrains Mono',monospace}
+    #email-preview-frame{width:100%;height:420px;border:1px solid var(--border);border-radius:8px;background:#f0f4ff}
+
+    /* Template editor modal extras */
+    .teditor-hint{font-size:.7rem;color:var(--muted2);margin-bottom:.4rem;line-height:1.5}
+    .html-textarea{font-family:'JetBrains Mono',monospace;font-size:.78rem;min-height:200px;resize:vertical;line-height:1.55}
+
+    /* ── Products page ───────────────────────────────────────────────────────── */
+    .product-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:.9rem;box-shadow:var(--shadow);transition:all .2s}
+    .product-card:hover{box-shadow:var(--shadow-md)}
+    .product-card.inactive{opacity:.6}
+    .product-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.8rem;flex-wrap:wrap}
+    .product-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:.15rem}
+    .product-name{font-size:.92rem;font-weight:700;color:var(--text)}
+    .product-meta{font-size:.74rem;color:var(--muted);margin-top:.1rem}
+    .product-packages{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.7rem}
+    .pkg-row{display:flex;align-items:center;gap:.6rem;font-size:.76rem;padding:.25rem .5rem;background:#f8fafc;border-radius:6px}
+    .pkg-label{flex:1;color:var(--text);font-weight:500}
+    .pkg-price{font-weight:700;color:var(--success);font-family:'JetBrains Mono',monospace;min-width:50px;text-align:right}
+    .pkg-duration{color:var(--muted);font-size:.68rem;min-width:35px;text-align:right}
+    .product-creds{background:#fdf4ff;border:1px solid #e9d5ff;border-radius:8px;padding:.65rem .85rem}
+    .creds-label{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7c3aed;margin-bottom:.3rem}
+    .creds-preview{font-size:.72rem;color:#581c87;font-family:'JetBrains Mono',monospace;white-space:pre-wrap;word-break:break-all}
+    /* Package edit rows in modal */
+    .pkg-edit-row{display:grid;grid-template-columns:1fr 90px 80px 32px;gap:.5rem;align-items:center;margin-bottom:.5rem}
+    .pkg-price-wrap{position:relative}
+    .pkg-currency{position:absolute;left:.7rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.82rem;pointer-events:none}
+    .pkg-price-input,.pkg-label-input,.pkg-dur-input{padding:.5rem .7rem;font-size:.82rem;border:1.5px solid var(--border);border-radius:7px;background:var(--white);color:var(--text);outline:none;width:100%}
+    .pkg-price-input{padding-left:1.6rem}
+    .pkg-price-input:focus,.pkg-label-input:focus,.pkg-dur-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+    @media(max-width:480px){.pkg-edit-row{grid-template-columns:1fr 1fr;gap:.4rem}}
+    /* Price badge in dashboard */
+    .price-badge{display:inline-flex;align-items:center;padding:.1rem .5rem;border-radius:99px;font-size:.62rem;font-weight:700;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-family:'JetBrains Mono',monospace}
+    /* Price input in generate form */
+    .price-input-wrap{position:relative}
+    .price-input-wrap input{padding-left:1.8rem}
+    .price-currency-icon{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700;font-size:.88rem;pointer-events:none}
+
+    /* ── Revenue page ──────────────────────────────────────────────────────── */
+    .rev-big{font-size:2.4rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--success);letter-spacing:-.03em;margin-bottom:.2rem}
+    .rev-big-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+    .rev-product-block{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;margin-bottom:.9rem;box-shadow:var(--shadow)}
+    .rev-product-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;flex-wrap:wrap;gap:.5rem}
+    .rev-product-name{font-size:.85rem;font-weight:700;color:var(--text)}
+    .rev-count{font-size:.68rem;color:var(--muted);background:#f1f5f9;border-radius:99px;padding:.1rem .5rem}
+    .rev-product-total{font-size:.95rem;font-weight:700;font-family:'JetBrains Mono',monospace}
+    .rev-bar-wrap{display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem}
+    .rev-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+    .rev-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+    .rev-bar-pct{font-size:.65rem;color:var(--muted);font-family:'JetBrains Mono',monospace;min-width:30px;text-align:right}
+    .rev-row{display:grid;grid-template-columns:1fr 1fr 100px 70px;gap:.5rem;align-items:center;padding:.3rem .25rem;border-bottom:1px solid #f1f5f9;font-size:.74rem}
+    .rev-row:last-child{border-bottom:none}
+    .rev-row-name{font-weight:600;color:var(--text)}
+    .rev-row-pkg{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .rev-row-date{color:var(--muted2);font-size:.68rem}
+    .rev-row-price{font-weight:700;color:var(--success);text-align:right;font-family:'JetBrains Mono',monospace}
+
+    /* ── Notification page ────────────────────────────────────────────────────── */
+    .notif-type-btns{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem}
+    .notif-type-btn{padding:.28rem .8rem;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:transparent;font-family:'Inter',sans-serif;transition:all .18s}
+    .notif-type-btn:hover{border-color:var(--border2)}
+    .notif-type-btn.sel-info   {background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
+    .notif-type-btn.sel-success{background:#f0fdf4;border-color:#bbf7d0;color:#15803d}
+    .notif-type-btn.sel-warning{background:#fffbeb;border-color:#fde68a;color:#b45309}
+    .notif-type-btn.sel-error  {background:#fef2f2;border-color:#fecaca;color:#dc2626}
+
+    /* ── Landing Page Editor ──────────────────────────────────────────────────── */
+    @media(max-width:960px){#page-landing [style*="grid-template-columns:1fr 420px"]{display:block!important}}
+    #page-landing [style*="grid-template-columns:1fr 420px"] > div:last-child{margin-top:1.2rem}
+
+    /* ── Login screen ──────────────────────────────────────────────────────── */
+    #login-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      width: 100%;
+      padding: 2rem 1rem;
+    }
+    .login-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.8rem 2.4rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--shadow-lg);
+      animation: fadeUp .4s ease;
+    }
+    .login-logo {
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+      margin-bottom: 2rem;
+    }
+    .login-logo-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--blue);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(37,99,235,.35);
+    }
+    .login-logo-icon svg { width: 22px; height: 22px; }
+    .login-brand   { font-size: 1.15rem; font-weight: 800; color: var(--text); letter-spacing: -.025em; }
+    .login-tagline { font-size: .72rem; color: var(--muted); margin-top: .08rem; }
+    .login-title   { font-size: 1.3rem; font-weight: 700; color: var(--text); margin-bottom: .3rem; letter-spacing: -.02em; }
+    .login-sub     { font-size: .82rem; color: var(--muted); margin-bottom: 1.6rem; }
+    .input-group   { position: relative; }
+    .input-group input { padding-left: 2.6rem; }
+    .input-group-icon { position: absolute; left: .85rem; top: 50%; transform: translateY(-50%); color: var(--muted2); font-size: .85rem; pointer-events: none; }
+    .btn-login     { width: 100%; padding: .8rem; font-size: .92rem; border-radius: 10px; margin-top: .4rem; }
+    .login-footer  { margin-top: 1.4rem; font-size: .7rem; color: var(--muted2); text-align: center; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════════════════════════════════════════ -->
+<div id="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="login-brand">DTC</div>
+        <div class="login-tagline">Digital Tools Corner</div>
+      </div>
+    </div>
+
+    <div class="login-title">Welcome back</div>
+    <div class="login-sub">Sign in to the admin panel to manage activations.</div>
+
+    <div class="form-group">
+      <label for="admin-key">Admin Key</label>
+      <div class="input-group">
+        <span class="input-group-icon">🔑</span>
+        <input type="password" id="admin-key" placeholder="Enter your admin key…"/>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-login" id="login-btn" onclick="Auth.login()">Sign In →</button>
+    <div class="msg err" id="login-err"></div>
+
+    <div class="login-footer">DTC Admin Panel v3.0</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     APP SHELL  (hidden until login)
+═══════════════════════════════════════════════════════════════════════════ -->
+<div id="app" style="display:none; width:100%">
+
+  <!-- ── Sidebar ── -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">
+        <div class="sb-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <div class="sb-name">DTC</div>
+      </div>
+      <div class="sb-tag">Digital Tools Corner</div>
+    </div>
+
+    <div class="nav">
+      <div class="nav-sec">Main</div>
+      <div class="nav-item active" onclick="Shell.navigate('dashboard', this)">
+        <span class="icon">⚡</span>Dashboard
+      </div>
+      <div class="nav-item" onclick="Shell.navigate('customers', this)">
+        <span class="icon">👤</span>Customers
+        <span class="nav-badge" id="nb-exp" style="display:none">0</span>
+      </div>
+
+      <div class="nav-sec" style="margin-top:.5rem">Revenue</div>
+      <div class="nav-item" onclick="Shell.navigate('revenue', this)">
+        <span class="icon">💰</span>Revenue
+      </div>
+      <div class="nav-item" onclick="Shell.navigate('resellers', this)">
+        <span class="icon">🤝</span>Resellers
+      </div>
+      <div class="nav-sec" style="margin-top:.5rem">Catalogue</div>
+      <div class="nav-item" onclick="Shell.navigate('products', this)">
+        <span class="icon">📦</span>Products
+      </div>
+      <div class="nav-sec" style="margin-top:.5rem">Settings</div>
+      <div class="nav-item" onclick="Shell.navigate('landing', this)">
+        <span class="icon">🌐</span>Landing Page
+      </div>
+      <div class="nav-item" onclick="Shell.navigate('instructions', this)">
+        <span class="icon">📋</span>Instructions
+      </div>
+      <div class="nav-item" onclick="Shell.navigate('notifications', this)">
+        <span class="icon">🔔</span>Notifications
+      </div>
+      <div class="nav-item" onclick="Shell.navigate('settings', this)">
+        <span class="icon">⚙</span>Settings
+      </div>
+      <div class="nav-item" onclick="Shell.navigate('campaigns', this)">
+        <span class="icon">📨</span>Email Campaigns
+      </div>
+      <div class="nav-item" onclick="Shell.navigate('email', this)">
+        <span class="icon">✉</span>Email Config
+      </div>
+    </div>
+
+    <div class="sb-footer">Admin Panel v3.0</div>
+  </nav>
+
+  <!-- ── Main ── -->
+  <main class="main">
+    <button class="mob-btn" id="mob-menu-btn">☰ Menu</button>
+
+    <!-- ── PAGE: Dashboard ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="ph">
+        <div class="ph-title">Dashboard</div>
+        <div class="ph-sub">Generate activation links and review customer submissions.</div>
+      </div>
+
+      <!-- Generate card -->
+      <div class="card">
+        <div class="card-title">Generate Activation Link</div>
+
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Customer Name</label>
+            <input type="text" id="cust-name" placeholder="e.g. Ahmed Khan"/>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Product</label>
+            <select id="gen-product" onchange="Dashboard.onProductChange()">
+              <option value="">— Select Product —</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top:.7rem">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Package</label>
+            <select id="pkg" onchange="Dashboard.onPackageChange()">
+              <option value="">— Select Package —</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Price (USD) <span style="color:var(--error);font-size:.65rem;font-weight:400">* required — no free links</span></label>
+            <div class="price-input-wrap">
+              <span class="price-currency-icon">$</span>
+              <input type="number" id="gen-price" min="0.01" step="0.01" placeholder="0.00" style="font-weight:700;color:var(--success)"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top:.7rem">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Pre-Activation Instructions</label>
+            <select id="gen-instr-set">
+              <option value="">— Default —</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Post-Activation Instructions</label>
+            <select id="gen-post-instr-set">
+              <option value="">— Same as Pre —</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Reseller (optional) -->
+        <div style="margin-top:.5rem">
+          <details style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:.5rem .8rem">
+            <summary style="font-size:.75rem;font-weight:600;color:var(--muted);cursor:pointer;list-style:none">🤝 Reseller tracking (optional)</summary>
+            <div class="form-row" style="margin-top:.7rem;margin-bottom:0">
+              <div class="form-group" style="margin-bottom:0">
+                <label>Reseller ID</label>
+                <input id="gen-reseller-id" placeholder="e.g. reseller-ahmed"/>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label>Reseller Name</label>
+                <input id="gen-reseller-name" placeholder="e.g. Ahmed Khan"/>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:.8rem" onclick="Dashboard.generateLink()">
+          ⚡ Generate Link
+        </button>
+        <div class="msg err" id="gen-err"></div>
+        <div class="link-result" id="link-result">
+          <div class="lr-label">✓ Link Ready — Share with customer</div>
+          <div class="lr-row">
+            <span class="lr-text" id="gen-link"></span>
+            <button class="copy-btn" id="copy-btn" onclick="Dashboard.copyGenLink()">Copy</button>
+          </div>
+          <div class="lr-note">⚠ This link is valid for <strong>6 months</strong>. &nbsp;|&nbsp; Price: <strong id="gen-price-display" style="color:var(--success)">—</strong></div>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="stats">
+        <div class="stat"><div class="stat-val" id="s-all">0</div><div class="stat-lbl">Total Links</div></div>
+        <div class="stat"><div class="stat-val sv-ind" id="s-pend">0</div><div class="stat-lbl">Not Opened</div></div>
+        <div class="stat"><div class="stat-val sv-blue" id="s-acc">0</div><div class="stat-lbl">Opened</div></div>
+        <div class="stat"><div class="stat-val sv-warn" id="s-sub">0</div><div class="stat-lbl">Submitted</div></div>
+        <div class="stat"><div class="stat-val sv-green" id="s-act">0</div><div class="stat-lbl">Activated</div></div>
+        <div class="stat"><div class="stat-val sv-red" id="s-exp">0</div><div class="stat-lbl">Expired / Declined</div></div>
+        <div class="stat"><div class="stat-val sv-green" id="s-rev">$0</div><div class="stat-lbl">Total Revenue</div></div>
+      </div>
+
+      <!-- Links table -->
+      <div class="card">
+        <div class="card-title">
+          <span>All Links</span>
+          <button class="btn btn-outline btn-sm" onclick="Dashboard.reload()">↻ Refresh</button>
+        </div>
+        <div class="filters" id="df">
+          <button class="fb active" onclick="Dashboard.setFilter('all',this)">All</button>
+          <button class="fb" onclick="Dashboard.setFilter('pending',this)">Not Opened</button>
+          <button class="fb" onclick="Dashboard.setFilter('accessed',this)">Opened</button>
+          <button class="fb" onclick="Dashboard.setFilter('submitted',this)">Submitted</button>
+          <button class="fb" onclick="Dashboard.setFilter('activated',this)">Activated</button>
+          <button class="fb" onclick="Dashboard.setFilter('declined',this)">Declined</button>
+          <button class="fb" onclick="Dashboard.setFilter('expired',this)">Expired</button>
+          <button class="fb" onclick="Dashboard.setFilter('deactivated',this)">Deactivated</button>
+        </div>
+        <div id="dash-tbl"><div class="empty">Click Refresh to load data.</div></div>
+      </div>
+    </div><!-- /page-dashboard -->
+
+
+    <!-- ── PAGE: Customers ── -->
+    <div class="page" id="page-customers">
+      <div class="ph">
+        <div class="ph-title">Customers</div>
+        <div class="ph-sub">Subscription status, expiry tracking and email communication.</div>
+      </div>
+      <div class="filters" id="cf" style="margin-bottom:1.2rem">
+        <button class="fb active" onclick="Customers.setFilter('all',this)">All</button>
+        <button class="fb" onclick="Customers.setFilter('active',this)">Active</button>
+        <button class="fb" onclick="Customers.setFilter('expiring',this)">Expiring Soon</button>
+        <button class="fb" onclick="Customers.setFilter('expired',this)">Expired</button>
+      </div>
+      <div id="cust-list"><div class="empty">Loading…</div></div>
+    </div><!-- /page-customers -->
+
+
+    <!-- ── PAGE: Instructions ── -->
+    <div class="page" id="page-instructions">
+      <div class="ph">
+        <div class="ph-title">Instructions</div>
+        <div class="ph-sub">Customise the messages customers see on the processing and approval screens.</div>
+      </div>
+      <button class="btn btn-primary" style="margin-bottom:1.2rem" onclick="Instructions.openModal()">
+        + New Instruction Set
+      </button>
+      <div id="instr-list"><div class="empty">Loading…</div></div>
+    </div><!-- /page-instructions -->
+
+
+    <!-- ── PAGE: Resellers ── -->
+    <div class="page" id="page-resellers">
+      <div class="ph">
+        <div class="ph-title">Resellers</div>
+        <div class="ph-sub">Track sales made through resellers separately from direct sales.</div>
+      </div>
+      <div class="stats" style="grid-template-columns:repeat(2,1fr);max-width:420px;margin-bottom:1.4rem">
+        <div class="stat"><div class="stat-val sv-ind" id="reseller-total">$0</div><div class="stat-lbl">Reseller Revenue</div></div>
+        <div class="stat"><div class="stat-val sv-blue" id="direct-total">$0</div><div class="stat-lbl">Direct Revenue</div></div>
+      </div>
+      <div id="reseller-breakdown"><div class="empty">Loading…</div></div>
+    </div><!-- /page-resellers -->
+
+    <!-- ── PAGE: Revenue ── -->
+    <div class="page" id="page-revenue">
+      <div class="ph">
+        <div class="ph-title">Revenue</div>
+        <div class="ph-sub">Track total earnings and per-product revenue across all activated subscriptions.</div>
+      </div>
+      <div class="card" style="margin-bottom:1.2rem">
+        <div style="display:flex;align-items:flex-end;gap:2rem;flex-wrap:wrap">
+          <div><div class="rev-big" id="rev-total">$0.00</div><div class="rev-big-label">Total Revenue (Activated)</div></div>
+        </div>
+      </div>
+      <div id="rev-breakdown"><div class="empty">Loading…</div></div>
+    </div><!-- /page-revenue -->
+
+    <!-- ── PAGE: Products ── -->
+    <div class="page" id="page-products">
+      <div class="ph">
+        <div class="ph-title">Products</div>
+        <div class="ph-sub">Manage your product catalogue, packages, prices, and credential details.</div>
+      </div>
+      <button class="btn btn-primary" style="margin-bottom:1.2rem" onclick="Products.openModal()">+ New Product</button>
+      <div id="products-list"><div class="empty">Loading…</div></div>
+    </div><!-- /page-products -->
+
+    <!-- ── PAGE: Notifications ── -->
+    <div class="page" id="page-notifications">
+      <div class="ph">
+        <div class="ph-title">Notifications</div>
+        <div class="ph-sub">Show a banner message to customers when they visit their activation page.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <span>Banner Message</span>
+          <label class="toggle" style="margin-bottom:0">
+            <input type="checkbox" id="notif-enabled"/>
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+            <span style="font-size:.78rem;color:var(--text);margin-left:.4rem;font-weight:600">Enabled</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <input id="notif-message" placeholder="e.g. We are experiencing high demand. Processing may take up to 24 hours." style="font-size:.85rem"/>
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <select id="notif-type" onchange="Notifications.init()">
+            <option value="info">ℹ Info (blue)</option>
+            <option value="success">✓ Success (green)</option>
+            <option value="warning">⚠ Warning (yellow)</option>
+            <option value="error">⚠ Alert (red)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Preview</label>
+          <div id="notif-preview" style="display:none"></div>
+          <div style="font-size:.72rem;color:var(--muted2);margin-top:.4rem">Enable the toggle and enter a message to see the preview.</div>
+        </div>
+        <button class="btn btn-primary" onclick="Notifications.save()">Save Notification</button>
+        <div class="msg ok" id="notif-ok"></div>
+        <div class="msg err" id="notif-err"></div>
+      </div>
+    </div><!-- /page-notifications -->
+
+    <!-- ── PAGE: Email Campaigns ── -->
+    <div class="page" id="page-campaigns">
+      <div class="ph">
+        <div class="ph-title">Email Campaigns</div>
+        <div class="ph-sub">Compose and send personalised emails to your customers. Use templates or write custom messages.</div>
+      </div>
+
+      <div class="email-layout">
+
+        <!-- Template list -->
+        <div class="tmpl-panel">
+          <div class="tmpl-panel-title">Templates</div>
+          <div id="template-list"><div class="empty" style="padding:1rem 0;font-size:.76rem">Loading…</div></div>
+        </div>
+
+        <!-- Compose -->
+        <div class="compose-panel">
+          <div class="compose-panel-title">
+            <span>Compose Message</span>
+          </div>
+
+          <!-- Recipient filter -->
+          <div class="recipient-bar">
+            <label style="font-size:.75rem;font-weight:600;color:var(--text);margin-bottom:0;white-space:nowrap">Send to:</label>
+            <select id="recipient-filter" onchange="BulkEmail._renderRecipientCount !== undefined && BulkEmail.render()" style="flex:1;padding:.4rem .7rem;font-size:.8rem;border:1.5px solid var(--border);border-radius:7px;background:var(--white);outline:none;min-width:160px">
+              <option value="all-with-email">Everyone with an email</option>
+              <option value="activated">Active subscribers only</option>
+              <option value="expiring">Expiring within 30 days</option>
+              <option value="expired">Expired subscriptions</option>
+              <option value="submitted">Submitted, awaiting approval</option>
+            </select>
+            <span class="recipient-count-badge" id="recipient-count">0 recipients</span>
+          </div>
+
+          <!-- Template type indicator -->
+          <div id="template-type-note" style="display:none;margin-bottom:.6rem"></div>
+
+          <!-- Quick template load dropdown -->
+          <div class="form-group" style="margin-bottom:.8rem">
+            <label>Load Template</label>
+            <div style="display:flex;gap:.5rem">
+              <select id="bulk-template-select" style="flex:1;padding:.5rem .8rem;font-size:.82rem;border:1.5px solid var(--border);border-radius:8px;background:var(--white);outline:none">
+                <option value="">— Select a template to load —</option>
+              </select>
+              <button class="btn btn-ghost-blue btn-sm" onclick="BulkEmail.loadSelectedTemplate()" style="white-space:nowrap">Load →</button>
+            </div>
+          </div>
+
+          <!-- Subject -->
+          <div class="form-group">
+            <label>Subject</label>
+            <input id="compose-subject" placeholder="e.g. Your subscription is expiring soon — DTC"/>
+          </div>
+
+          <!-- Variable chips -->
+          <div style="margin-bottom:.5rem">
+            <div style="font-size:.68rem;font-weight:600;color:var(--muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.07em">Insert variable</div>
+            <div class="var-chips">
+              <span class="var-chip" onclick="BulkEmail.insertVar('{{name}}')">{{name}}</span>
+              <span class="var-chip" onclick="BulkEmail.insertVar('{{package}}')">{{package}}</span>
+              <span class="var-chip" onclick="BulkEmail.insertVar('{{product}}')">{{product}}</span>
+              <span class="var-chip" onclick="BulkEmail.insertVar('{{expiry}}')">{{expiry}}</span>
+              <span class="var-chip" onclick="BulkEmail.insertVar('{{daysLeft}}')">{{daysLeft}}</span>
+              <span class="var-chip" onclick="BulkEmail.insertVar('{{email}}')">{{email}}</span>
+              <span class="var-chip" onclick="BulkEmail.insertVar('{{wechat}}')">{{wechat}}</span>
+            </div>
+          </div>
+
+          <!-- Body — HTML supported -->
+          <div class="form-group" style="margin-bottom:.6rem">
+            <label>
+              Body
+              <span style="font-weight:400;color:var(--muted);margin-left:.4rem">HTML supported — use &lt;p&gt;, &lt;strong&gt;, &lt;a href&gt;, etc.</span>
+            </label>
+            <textarea class="compose-textarea" id="compose-body" placeholder="Write your email here. HTML is supported.&#10;&#10;Example:&#10;&lt;p&gt;Hi {{name}},&lt;/p&gt;&#10;&lt;p&gt;Your &lt;strong&gt;{{package}}&lt;/strong&gt; subscription...&lt;/p&gt;"></textarea>
+          </div>
+
+          <div class="send-bar">
+            <button class="btn-send" id="send-bulk-btn" onclick="BulkEmail.send()">
+              📤 Send Email
+            </button>
+            <button class="btn btn-outline" onclick="BulkEmail.newTemplate()">Save as Template</button>
+            <button class="btn btn-outline btn-sm" onclick="BulkEmail.render()">↻ Refresh count</button>
+          </div>
+          <div class="msg ok" id="bulk-ok" style="margin-top:.7rem"></div>
+          <div class="msg err" id="bulk-err" style="margin-top:.7rem"></div>
+        </div>
+
+        <!-- Live preview -->
+        <div class="preview-panel">
+          <div class="preview-panel-title">
+            Live Preview
+            <span class="preview-sample" id="preview-sample-label">sample: Ahmed Khan</span>
+          </div>
+          <iframe id="email-preview-frame" sandbox="allow-same-origin" title="Email Preview"></iframe>
+          <div style="font-size:.68rem;color:var(--muted2);margin-top:.5rem;line-height:1.5">Variables are filled with sample data. Real emails are personalised per recipient.</div>
+        </div>
+
+      </div>
+    </div><!-- /page-campaigns -->
+
+    <!-- ── PAGE: Settings ── -->
+    <div class="page" id="page-settings">
+      <div class="ph">
+        <div class="ph-title">Settings</div>
+        <div class="ph-sub">Configure currency, automatic emails, and global preferences.</div>
+      </div>
+
+      <div class="setting-block">
+        <div class="setting-block-title">Currency</div>
+        <div class="setting-block-sub">Choose the currency shown in admin and on receipts. This applies to all new links. Existing links keep their original currency.</div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Currency</label>
+            <select id="currency-select"></select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;display:flex;align-items:flex-end">
+            <div style="font-size:.8rem;color:var(--muted);background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:.6rem .9rem" id="currency-preview">Example: $29.99</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-block">
+        <div class="setting-block-title">Activation Email</div>
+        <div class="setting-block-sub">Automatically send this email template to the customer when you approve their link. Leave blank to disable auto-send.</div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Email Template to Send on Approval</label>
+          <select id="activation-template-select">
+            <option value="">— No auto email —</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="Settings.save()">Save Settings</button>
+      <div class="msg ok" id="settings-ok"></div>
+      <div class="msg err" id="settings-err"></div>
+    </div><!-- /page-settings -->
+
+    <!-- ── PAGE: Landing Page Editor ── -->
+    <div class="page" id="page-landing">
+      <div class="ph">
+        <div class="ph-title">🌐 Landing Page</div>
+        <div class="ph-sub">Edit all content displayed on your public-facing landing page.</div>
+      </div>
+
+      <div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center">
+        <button class="btn btn-primary" onclick="Landing.save()">💾 Save Changes</button>
+        <button class="btn btn-outline" onclick="Landing.openLandingPage()">↗ View Live Page</button>
+        <button class="btn btn-outline" onclick="Landing.reset()" style="margin-left:auto;color:var(--error);border-color:var(--error-border)">↺ Reset to Defaults</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 420px;gap:1.5rem;align-items:start">
+        <!-- LEFT: Edit forms -->
+        <div>
+
+          <!-- Hero Section -->
+          <div class="setting-block">
+            <div class="setting-block-title">🚀 Hero Section</div>
+            <div class="setting-block-sub">The main headline and subtitle visitors see first.</div>
+            <div class="form-group">
+              <label>Hero Title <span style="font-weight:400;color:var(--muted)">(HTML supported — use &lt;span&gt; for blue text)</span></label>
+              <input id="lp-hero-title" placeholder="Your Gateway to <span>AI & Academic</span> Excellence"/>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Hero Subtitle</label>
+              <textarea id="lp-hero-subtitle" rows="3" placeholder="Short compelling description of DTC's value…"></textarea>
+            </div>
+          </div>
+
+          <!-- Statistics -->
+          <div class="setting-block">
+            <div class="setting-block-title">📊 Statistics Bar</div>
+            <div class="setting-block-sub">Key numbers shown prominently on the landing page.</div>
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom:0">
+                <label>Active Customers</label>
+                <input id="lp-stat-customers" placeholder="2,000+"/>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label>Accounts Activated</label>
+                <input id="lp-stat-activations" placeholder="10,000+"/>
+              </div>
+            </div>
+            <div class="form-row" style="margin-top:.7rem">
+              <div class="form-group" style="margin-bottom:0">
+                <label>AI Tools Count</label>
+                <input id="lp-stat-tools" placeholder="100+"/>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label>Countries Served</label>
+                <input id="lp-stat-countries" placeholder="50+"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- About -->
+          <div class="setting-block">
+            <div class="setting-block-title">ℹ About Section</div>
+            <div class="setting-block-sub">Text in the "About DTC" section of the page.</div>
+            <div class="form-group">
+              <label>Section Title</label>
+              <input id="lp-about-title" placeholder="Premium AI Access, Made Affordable"/>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Description</label>
+              <textarea id="lp-about-desc" rows="3" placeholder="Describe DTC's mission and value proposition…"></textarea>
+            </div>
+          </div>
+
+          <!-- Contact -->
+          <div class="setting-block">
+            <div class="setting-block-title">📞 Contact Details</div>
+            <div class="setting-block-sub">Shown in the contact section and page footer.</div>
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom:0">
+                <label>Email Address</label>
+                <input id="lp-email" type="email" placeholder="dtc@dtc1.shop"/>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label>WhatsApp Number</label>
+                <input id="lp-whatsapp" placeholder="+86 19738122807"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- WeChat QR -->
+          <div class="setting-block">
+            <div class="setting-block-title">💬 WeChat QR Code</div>
+            <div class="setting-block-sub">Upload your WeChat QR code image. It will be embedded on the landing page. Max 500 KB.</div>
+            <div style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap">
+              <div id="lp-qr-preview" style="width:80px;height:80px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--muted2);font-size:.65rem;text-align:center;background:#f8fafc">
+                No QR set
+              </div>
+              <div style="flex:1;min-width:200px">
+                <label class="btn btn-outline" style="cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;margin-bottom:.5rem">
+                  📁 Upload QR Image
+                  <input type="file" accept="image/*" style="display:none" onchange="Landing.handleQrUpload(this)"/>
+                </label>
+                <div class="form-group" style="margin-bottom:0">
+                  <label>Or paste Image URL / Base64</label>
+                  <input id="lp-wechat-qr" placeholder="https://… or data:image/png;base64,…" style="font-size:.75rem"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: Live preview -->
+        <div style="position:sticky;top:1.5rem">
+          <div class="card" style="margin-bottom:0">
+            <div class="card-title" style="margin-bottom:.9rem">
+              <span>Live Preview</span>
+              <button class="btn btn-outline btn-sm" onclick="Landing.save()">Save →</button>
+            </div>
+            <div id="lp-preview" style="font-size:.78rem"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="msg ok" id="lp-ok" style="margin-top:1rem"></div>
+      <div class="msg err" id="lp-err" style="margin-top:1rem"></div>
+    </div><!-- /page-landing -->
+
+    <!-- ── PAGE: Email Config ── -->
+    <div class="page" id="page-email">
+      <div class="ph">
+        <div class="ph-title">Email Configuration</div>
+        <div class="ph-sub">Set up SMTP to send automatic renewal reminders and expiry notices.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">SMTP Settings</div>
+        <div class="provider-btns">
+          <span style="font-size:.72rem;color:var(--muted);font-weight:500;align-self:center;margin-right:.2rem">Quick setup:</span>
+          <button class="btn btn-outline btn-sm" onclick="EmailConfig.applyPreset('gmail')">Gmail</button>
+          <button class="btn btn-outline btn-sm" onclick="EmailConfig.applyPreset('outlook')">Outlook</button>
+          <button class="btn btn-outline btn-sm" onclick="EmailConfig.applyPreset('yahoo')">Yahoo</button>
+          <button class="btn btn-outline btn-sm" onclick="EmailConfig.applyPreset('brevo')">Brevo (free)</button>
+          <button class="btn btn-outline btn-sm" onclick="EmailConfig.applyPreset('sendgrid')">SendGrid (free)</button>
+        </div>
+        <div class="gmail-guide" id="gmail-guide">
+          <strong style="color:var(--warn);display:block;margin-bottom:.4rem">⚠ Gmail requires an App Password</strong>
+          <ol style="padding-left:1.3rem;color:var(--muted)">
+            <li>Go to <strong>myaccount.google.com</strong> → Security</li>
+            <li>Enable <strong>2-Step Verification</strong></li>
+            <li>Search <strong>App Passwords</strong> → Create one named "DTC Portal"</li>
+            <li>Paste the 16-character password into the Password field below</li>
+          </ol>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>SMTP Host</label><input id="em-host" placeholder="smtp.gmail.com"/></div>
+          <div class="form-group"><label>Port</label><input id="em-port" placeholder="587"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Email Address</label><input type="email" id="em-user" placeholder="you@gmail.com"/></div>
+          <div class="form-group"><label>App Password</label><input type="password" id="em-pass" placeholder="••••••••••"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Sender Name</label><input id="em-name" placeholder="DTC Digital Tools Corner"/></div>
+          <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:.1rem">
+            <label class="toggle">
+              <input type="checkbox" id="em-ssl"/>
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+              <span style="font-size:.82rem;color:var(--text);margin-left:.4rem;font-weight:500">SSL (port 465)</span>
+            </label>
+          </div>
+        </div>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="EmailConfig.save()">Save Configuration</button>
+          <button class="btn btn-outline" onclick="EmailConfig.sendTest()"><span id="test-txt">Send Test Email</span></button>
+        </div>
+        <div class="msg ok" id="em-ok"></div>
+        <div class="msg err" id="em-err"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Email Log</div>
+        <div id="email-log-wrap"><div class="empty">No emails sent yet.</div></div>
+      </div>
+    </div><!-- /page-email -->
+
+  </main>
+</div><!-- /app -->
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════════════════════════════════════ -->
+
+<!-- Decline -->
+<div class="modal-overlay" id="decline-modal">
+  <div class="modal">
+    <div class="modal-title">Decline Activation Request</div>
+    <div class="modal-sub">Provide a reason so the customer knows what to correct.</div>
+    <input type="hidden" id="decline-token"/>
+    <div class="form-group">
+      <label>Decline Reason</label>
+      <textarea id="decline-reason" rows="3" placeholder="e.g. The details could not be verified. Please resubmit."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="Modals.closeDecline()">Cancel</button>
+      <button class="btn btn-danger"  onclick="Modals.confirmDecline()">Decline Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- Session Data Viewer -->
+<div class="modal-overlay" id="session-modal">
+  <div class="modal">
+    <div class="modal-title">ChatGPT Session Data</div>
+    <div class="modal-sub">Full session JSON submitted by customer.</div>
+    <textarea id="session-modal-content" rows="10"
+      style="font-family:'JetBrains Mono',monospace;font-size:.72rem;resize:vertical" readonly></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="Modals.closeSession()">Close</button>
+      <button class="btn btn-primary" onclick="Modals.copySession()">Copy Data</button>
+    </div>
+  </div>
+</div>
+
+<!-- Instruction Set Editor -->
+<div class="modal-overlay" id="instr-modal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-title" id="instr-modal-title">New Instruction Set</div>
+    <div class="modal-sub">These messages are shown to customers on the processing and approved screens for each link.</div>
+    <input type="hidden" id="instr-id"/>
+    <div class="form-group">
+      <label>Name</label>
+      <input id="instr-name" placeholder="e.g. Claude Pro — Custom"/>
+    </div>
+
+    <span class="modal-section-label">📋 Pre-Activation — shown while processing &amp; on approval</span>
+    <div class="form-group">
+      <label>Processing Page Message</label>
+      <textarea id="instr-processing" rows="2" placeholder="Message shown while the order is being reviewed…"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Approved Page Message</label>
+      <textarea id="instr-approved" rows="2" placeholder="Message shown after approval…"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Verification Steps <span style="font-weight:400;color:var(--muted)">(one per line)</span></label>
+      <textarea id="instr-steps" rows="4" placeholder="Step 1&#10;Step 2&#10;Step 3"></textarea>
+    </div>
+
+    <span class="modal-section-label">🚀 Post-Activation — shown in the "Getting Started" section</span>
+    <div class="form-group">
+      <label>Post-Activation Message</label>
+      <textarea id="instr-post-approved" rows="2" placeholder="Message shown in the Getting Started section after activation…"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Getting Started Steps <span style="font-weight:400;color:var(--muted)">(one per line)</span></label>
+      <textarea id="instr-post-steps" rows="4" placeholder="Step 1&#10;Step 2&#10;Step 3"></textarea>
+    </div>
+    <div class="msg err" id="instr-err"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="Instructions.closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="Instructions.save()">Save Instruction Set</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     JAVASCRIPT — load in dependency order
+═══════════════════════════════════════════════════════════════════════════ -->
+<!-- Template Editor Modal -->
+<div class="modal-overlay" id="teditor-modal">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-title" id="teditor-modal-title">New Template</div>
+    <div class="modal-sub">Templates are reusable email drafts. Variables like <code style="background:#f1f5f9;padding:.1rem .35rem;border-radius:4px;font-size:.82rem">{{name}}</code> are replaced per recipient when sending.</div>
+    <input type="hidden" id="teditor-id"/>
+    <div class="form-group">
+      <label>Template Name <span style="font-weight:400;color:var(--muted)">(admin reference only)</span></label>
+      <input id="teditor-name" placeholder="e.g. Renewal Reminder"/>
+    </div>
+    <div class="form-group">
+      <label>Subject</label>
+      <input id="teditor-subject" placeholder="e.g. Your {{package}} expires in {{daysLeft}} days — DTC"/>
+    </div>
+    <div class="form-group">
+      <label>Body <span style="font-weight:400;color:var(--muted)">— HTML supported</span></label>
+      <div class="teditor-hint">Available variables: <code>{{name}}</code> <code>{{package}}</code> <code>{{product}}</code> <code>{{expiry}}</code> <code>{{daysLeft}}</code> <code>{{email}}</code> <code>{{wechat}}</code></div>
+      <textarea class="compose-textarea html-textarea" id="teditor-body" placeholder="&lt;p&gt;Hi {{name}},&lt;/p&gt;&#10;&lt;p&gt;Your &lt;strong&gt;{{package}}&lt;/strong&gt; subscription expires on &lt;strong&gt;{{expiry}}&lt;/strong&gt;.&lt;/p&gt;"></textarea>
+    </div>
+    <div class="msg err" id="teditor-err"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="BulkEmail.closeTemplateEditor()">Cancel</button>
+      <button class="btn btn-primary" onclick="BulkEmail.saveTemplate()">Save Template</button>
+    </div>
+  </div>
+</div>
+
+<!-- Product Editor Modal -->
+<div class="modal-overlay" id="prod-modal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-title" id="prod-modal-title">New Product</div>
+    <div class="modal-sub">Configure what customers see and submit when they use this product's activation link.</div>
+    <input type="hidden" id="prod-id"/>
+    <div class="form-row">
+      <div class="form-group"><label>Product Name</label><input id="prod-name" placeholder="e.g. Claude Pro"/></div>
+      <div class="form-group"><label>Type</label>
+        <select id="prod-type">
+          <option value="session">Claude (Org ID)</option>
+          <option value="chatgpt">ChatGPT (Session data)</option>
+          <option value="credentials">Credentials only</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Description</label><input id="prod-desc" placeholder="Short description shown in admin"/></div>
+      <div class="form-group" style="display:flex;align-items:flex-end;gap:1rem;padding-bottom:.1rem">
+        <div style="flex:1"><label>Colour</label><input type="color" id="prod-color" value="#2563eb" style="height:2.4rem;padding:.2rem .3rem;cursor:pointer"/></div>
+        <label class="toggle" style="margin-bottom:.35rem"><input type="checkbox" id="prod-active" checked/><div class="toggle-track"><div class="toggle-thumb"></div></div><span style="font-size:.8rem;font-weight:600;margin-left:.4rem">Active</span></label>
+      </div>
+    </div>
+
+    <div style="margin-bottom:.8rem">
+      <label class="toggle"><input type="checkbox" id="prod-creds-mode" onchange="Products._toggleCredsMode()"/><div class="toggle-track"><div class="toggle-thumb"></div></div><span style="font-size:.82rem;font-weight:600;margin-left:.5rem">Credentials Mode</span></label>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;padding-left:2.4rem">When enabled, customers only provide WeChat + email. Login details you enter below are shown to them after approval.</div>
+    </div>
+    <div id="creds-details-wrap" style="display:none;margin-bottom:.9rem">
+      <div class="form-group">
+        <label>Login Details <span style="font-weight:400;color:var(--muted)">(shown to customer after approval)</span></label>
+        <textarea id="prod-login-details" rows="4" placeholder="e.g.&#10;Email: shared@example.com&#10;Password: ••••••••&#10;Notes: Log out after each session"></textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>Access Link <span style="font-weight:400;color:var(--muted)">(optional — shown as a clickable button to customer)</span></label>
+        <input id="prod-access-link" placeholder="e.g. https://claude.ai or https://chat.openai.com"/>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+      <label style="margin-bottom:0">Packages & Prices</label>
+      <button class="btn btn-outline btn-sm" onclick="Products.addPkgRow()">+ Add Package</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 90px 80px 32px;gap:.5rem;margin-bottom:.3rem">
+      <span style="font-size:.63rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Label</span>
+      <span style="font-size:.63rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Price</span>
+      <span style="font-size:.63rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Duration</span>
+      <span></span>
+    </div>
+    <div id="pkg-rows"></div>
+
+    <div class="msg err" id="prod-err"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="Products.closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="Products.save()">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/utils.js"></script>
+<script src="js/store.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/customers.js"></script>
+<script src="js/instructions.js"></script>
+<script src="js/email.js"></script>
+<script src="js/modals.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/resellers.js"></script>
+<script src="js/bulk-email.js"></script>
+<script src="js/landing.js"></script>
+<script src="js/products.js"></script>
+<script src="js/revenue.js"></script>
+<script src="js/notifications.js"></script>
+
+<script>
+  // ── Bootstrap: wire up everything once DOM is ready ──
+  document.addEventListener('DOMContentLoaded', () => {
+    Auth.init();
+    Modals.init();
+  });
+</script>
+
+</body>
+</html>
